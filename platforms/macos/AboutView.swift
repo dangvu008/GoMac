@@ -8,6 +8,7 @@ struct AboutView: View {
             header
             Divider()
             infoSection
+            featureSection
             Divider()
             linksSection
             Divider()
@@ -68,9 +69,46 @@ struct AboutView: View {
             infoRow(icon: "envelope.fill", title: "Contact", value: AppMetadata.authorEmail, isLink: true, url: "mailto:\(AppMetadata.authorEmail)")
             infoRow(icon: "hammer.fill", title: "Built with", value: AppMetadata.techStack)
             infoRow(icon: "doc.text.fill", title: "License", value: AppMetadata.license)
+            Divider().padding(.vertical, 4)
+            infoRow(icon: "arrow.triangle.branch", title: "Dựa trên", value: "gonhanh.org", isLink: true, url: AppMetadata.originalWebsite)
+            infoRow(icon: "person.fill", title: "Tác giả gốc", value: AppMetadata.originalAuthor, isLink: true, url: AppMetadata.originalAuthorProfile)
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 24)
+    }
+
+    // MARK: - Feature Highlight Section
+    private var featureSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: "keyboard.badge.ellipsis")
+                    .font(.system(size: 14))
+                    .foregroundStyle(.orange)
+                Text("Tính năng đặc biệt")
+                    .font(.callout.bold())
+            }
+            
+            Text("Hỗ trợ bàn phím Nhật Bản (JIS)")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.primary)
+            
+            Text("Tự động chuyển đổi keyboard layout từ định dạng JIS sang US khi khởi động, giúp gõ tiếng Việt dễ dàng hơn trên các máy Mac thị trường Nhật Bản.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.orange.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                )
+        )
+        .padding(.horizontal, 24)
+        .padding(.vertical, 12)
     }
 
     private func infoRow(icon: String, title: String, value: String, isLink: Bool = false, url: String? = nil) -> some View {
@@ -106,7 +144,6 @@ struct AboutView: View {
             linkButton(icon: "globe", title: "Website", url: AppMetadata.website)
             linkButton(icon: "chevron.left.forwardslash.chevron.right", title: "GitHub", url: AppMetadata.repository)
             linkButton(icon: "exclamationmark.bubble.fill", title: "Issues", url: AppMetadata.issuesURL)
-            linkButton(icon: "link", title: "LinkedIn", url: AppMetadata.authorLinkedin)
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 24)

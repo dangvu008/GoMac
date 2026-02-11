@@ -46,14 +46,6 @@ enum NavigationPage: String, CaseIterable {
     }
 }
 
-// MARK: - Update Status
-
-enum UpdateStatus: Equatable {
-    case idle, checking, upToDate, available(String), error
-
-    var isChecking: Bool { if case .checking = self { return true }; return false }
-    var isAvailable: Bool { if case .available = self { return true }; return false }
-}
 
 // MARK: - App State
 
@@ -143,6 +135,12 @@ class AppState: ObservableObject {
         }
     }
 
+    @Published var autoSwitchToUSLayout: Bool = false {
+        didSet {
+            UserDefaults.standard.set(autoSwitchToUSLayout, forKey: SettingsKey.autoSwitchToUSLayout)
+        }
+    }
+
     @Published var toggleShortcut: KeyboardShortcut {
         didSet {
             toggleShortcut.save()
@@ -157,7 +155,7 @@ class AppState: ObservableObject {
         }
     }
 
-    @Published var updateStatus: UpdateStatus = .idle
+
     @Published var shortcuts: [ShortcutItem] = []
     @Published var isLaunchAtLoginEnabled: Bool = false
     @Published var requiresManualLaunchAtLogin: Bool = false
@@ -182,6 +180,7 @@ class AppState: ObservableObject {
         englishAutoRestore = defaults.bool(forKey: SettingsKey.englishAutoRestore)
         autoCapitalize = defaults.bool(forKey: SettingsKey.autoCapitalize)
         soundEnabled = defaults.bool(forKey: SettingsKey.soundEnabled)
+        autoSwitchToUSLayout = defaults.bool(forKey: SettingsKey.autoSwitchToUSLayout)
 
         // Sync settings to Rust engine
         syncAllToEngine()
@@ -192,7 +191,6 @@ class AppState: ObservableObject {
         // Setup observers and services
         setupObservers()
         setupLaunchAtLoginMonitoring()
-        checkForUpdates()
     }
 
     private func syncAllToEngine() {
@@ -372,23 +370,7 @@ class AppState: ObservableObject {
         return imported
     }
 
-    // MARK: - Updates
 
-    func checkForUpdates() {
-        updateStatus = .checking
-        let startTime = Date()
-        UpdateChecker.shared.checkForUpdates { [weak self] result in
-            let elapsed = Date().timeIntervalSince(startTime)
-            let delay = max(0, 1.5 - elapsed)
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                switch result {
-                case .available(let info): self?.updateStatus = .available(info.version)
-                case .upToDate: self?.updateStatus = .upToDate
-                case .error: self?.updateStatus = .error
-                }
-            }
-        }
-    }
 }
 
 // MARK: - Models
@@ -536,20 +518,28 @@ struct MainSettingsView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        HStack(spacing: 0) {
-            ZStack {
-                VisualEffectBackground(material: .sidebar, blendingMode: .behindWindow)
-                sidebar
-            }
-            .frame(width: 200)
+        ZStack {
+            // Background Image
+            Image("SettingsBackground")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 700, height: 480)
+                .clipped()
 
-            ZStack {
-                if colorScheme == .dark {
-                    VisualEffectBackground(material: .headerView, blendingMode: .behindWindow)
-                } else {
-                    Color(NSColor.windowBackgroundColor)
+            // Main Content with Glass Effect
+            HStack(spacing: 0) {
+                ZStack {
+                    VisualEffectBackground(material: .sidebar, blendingMode: .withinWindow)
+                        .opacity(0.7)
+                    sidebar
                 }
-                content
+                .frame(width: 200)
+
+                ZStack {
+                    VisualEffectBackground(material: .headerView, blendingMode: .withinWindow)
+                        .opacity(0.5)
+                    content
+                }
             }
         }
         .ignoresSafeArea()
@@ -566,7 +556,9 @@ struct MainSettingsView: View {
             VStack(spacing: 12) {
                 Image(nsImage: AppMetadata.logo).resizable().frame(width: 96, height: 96)
                 Text(AppMetadata.name).font(.system(size: 20, weight: .bold))
-                UpdateBadgeView(status: appState.updateStatus) { appState.checkForUpdates() }
+                Text("v\(AppMetadata.version)")
+                    .font(.system(size: 11))
+                    .foregroundColor(Color(NSColor.tertiaryLabelColor))
             }
             .padding(.top, 40)
 
@@ -598,68 +590,6 @@ struct MainSettingsView: View {
     }
 }
 
-// MARK: - Update Badge
-
-struct UpdateBadgeView: View {
-    let status: UpdateStatus
-    let onCheck: () -> Void
-    @State private var hovered = false
-    @State private var rotation: Double = 0
-
-    private var statusText: String? {
-        switch status {
-        case .idle: return nil
-        case .checking: return "Kiểm tra"
-        case .upToDate: return "Mới nhất"
-        case .available: return "Cập nhật"
-        case .error: return "Thất bại"
-        }
-    }
-
-    private var statusIcon: (name: String, color: Color)? {
-        switch status {
-        case .upToDate: return ("checkmark.circle.fill", .green)
-        case .available: return ("arrow.up.circle.fill", .orange)
-        case .error: return ("exclamationmark.triangle.fill", .orange)
-        default: return nil
-        }
-    }
-
-    var body: some View {
-        HStack(spacing: 3) {
-            Text("v\(AppMetadata.version)")
-            if status.isChecking {
-                Image(systemName: "arrow.clockwise.circle.fill")
-                    .font(.system(size: 12))
-                    .foregroundColor(.secondary)
-                    .rotationEffect(.degrees(rotation))
-                    .onAppear { withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) { rotation = 360 } }
-                    .onDisappear { rotation = 0 }
-            } else if let icon = statusIcon {
-                Image(systemName: icon.name).font(.system(size: 12)).foregroundColor(icon.color)
-            }
-            if let text = statusText { Text(text) }
-        }
-        .font(.system(size: 11))
-        .foregroundColor(Color(NSColor.tertiaryLabelColor))
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(Capsule().fill(hovered ? Color(NSColor.controlBackgroundColor).opacity(0.5) : Color.clear))
-        .onHover { h in
-            hovered = h
-            if status.isAvailable { if h { NSCursor.pointingHand.push() } else { NSCursor.pop() } }
-        }
-        .onTapGesture {
-            guard !status.isChecking else { return }
-            if status.isAvailable {
-                if case .available(let info) = UpdateManager.shared.state {
-                    UpdateManager.shared.downloadUpdate(info)
-                    NotificationCenter.default.post(name: .showUpdateWindow, object: nil)
-                }
-            } else { onCheck() }
-        }
-    }
-}
 
 // MARK: - Nav Button
 
@@ -732,6 +662,10 @@ struct SettingsPageView: View {
                 Divider().padding(.leading, 12)
                 SettingsToggleRow("Tự chuyển chế độ theo ứng dụng", isOn: $appState.perAppModeEnabled)
                 Divider().padding(.leading, 12)
+                SettingsToggleRow("Tự động chuyển sang bàn phím US", 
+                                  subtitle: "Dành cho máy bàn phím JIS (Nhật)",
+                                  isOn: $appState.autoSwitchToUSLayout)
+                Divider().padding(.leading, 12)
                 englishAutoRestoreRow
             }
             .cardBackground()
@@ -773,7 +707,7 @@ struct SettingsPageView: View {
         SettingsRow {
             HStack(spacing: 6) {
                 Text("Tự khôi phục từ tiếng Anh").font(.system(size: 13))
-                Link(destination: URL(string: "https://github.com/khaphanspace/gonhanh.org/issues/26")!) {
+                Link(destination: URL(string: "https://github.com/dangvu008/GoMac/issues")!) {
                     Text("Beta · Góp ý")
                         .font(.system(size: 9, weight: .medium))
                         .foregroundColor(.white)
@@ -927,6 +861,11 @@ struct ShortcutsSheet: View {
                 Label("Nhập", systemImage: "square.and.arrow.down")
             }
             .buttonStyle(.borderless)
+            Button(action: importDevShortcuts) {
+                Label("Dev", systemImage: "terminal")
+            }
+            .buttonStyle(.borderless)
+            .help("Nhập bộ gõ tắt cho Developer (Git, NPM, Docker...)")
             Button(action: exportShortcuts) {
                 Label("Xuất", systemImage: "square.and.arrow.up")
             }
@@ -998,6 +937,23 @@ struct ShortcutsSheet: View {
         }
     }
 
+    private func importDevShortcuts() {
+        let devShortcuts = """
+        ;Gõ Nhanh - Developer Shortcuts
+        git s:git status
+        git a:git add .
+        git c:git commit -m ""
+        git p:git push origin
+        git l:git pull origin
+        npm i:npm install
+        npm d:npm run dev
+        npm b:npm run build
+        dc up:docker-compose up -d
+        dc down:docker-compose down
+        """
+        _ = appState.importShortcuts(from: devShortcuts)
+    }
+
     private func exportShortcuts() {
         // Dispatch panel creation to next run loop to prevent UI blocking
         DispatchQueue.main.async { [weak appState] in
@@ -1032,16 +988,21 @@ struct AboutPageView: View {
             HStack(spacing: 12) {
                 AboutLink(icon: "chevron.left.forwardslash.chevron.right", title: "GitHub", url: AppMetadata.repository)
                 AboutLink(icon: "ant", title: "Báo lỗi", url: AppMetadata.issuesURL)
-                AboutLink(icon: "heart", title: "Ủng hộ", url: AppMetadata.sponsorURL)
             }
             Spacer()
             VStack(spacing: 8) {
                 HStack(spacing: 4) {
-                    Text("Phát triển bởi").foregroundColor(Color(NSColor.tertiaryLabelColor))
-                    AuthorLink(name: AppMetadata.author, url: AppMetadata.authorLinkedin)
+                    Text("Tuỳ biến bởi").foregroundColor(Color(NSColor.tertiaryLabelColor))
+                    AuthorLink(name: AppMetadata.author, url: AppMetadata.authorProfile)
                 }
                 .font(.system(size: 12))
-                Text("Từ Việt Nam với ❤️").font(.system(size: 11)).foregroundColor(Color(NSColor.tertiaryLabelColor))
+                HStack(spacing: 4) {
+                    Text("Dựa trên").foregroundColor(Color(NSColor.tertiaryLabelColor))
+                    AuthorLink(name: "gonhanh.org", url: AppMetadata.originalWebsite)
+                    Text("bởi").foregroundColor(Color(NSColor.tertiaryLabelColor))
+                    AuthorLink(name: AppMetadata.originalAuthor, url: AppMetadata.originalAuthorProfile)
+                }
+                .font(.system(size: 11))
             }
             .padding(.bottom, 8)
         }

@@ -76,6 +76,12 @@ private enum KeyCode {
     static let n7: CGKeyCode = 0x1A
     static let n8: CGKeyCode = 0x1C
     static let n9: CGKeyCode = 0x19
+    
+    // JIS specific keys
+    static let jisYen: CGKeyCode = 0x5D
+    static let jisUnderscore: CGKeyCode = 0x5E
+    static let jisEisu: CGKeyCode = 0x66
+    static let jisKana: CGKeyCode = 0x68
 }
 
 /// Check if key is a break key (space, punctuation, arrows, etc.)
@@ -1013,7 +1019,8 @@ private func keyboardCallback(
     let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
 
     // Custom shortcut to toggle Vietnamese (default: Ctrl+Space)
-    if matchesToggleShortcut(keyCode: keyCode, flags: flags) {
+    // Also handle JIS Eisu (0x66) and Kana (0x68) for toggle on modded JIS keyboards
+    if matchesToggleShortcut(keyCode: keyCode, flags: flags) || keyCode == KeyCode.jisEisu || keyCode == KeyCode.jisKana {
         DispatchQueue.main.async { NotificationCenter.default.post(name: .toggleVietnamese, object: nil) }
         return nil
     }
@@ -1022,6 +1029,61 @@ private func keyboardCallback(
     let shift = flags.contains(.maskShift)
     let caps = shift || flags.contains(.maskAlphaShift)
     let ctrl = flags.contains(.maskCommand) || flags.contains(.maskControl) || flags.contains(.maskAlternate)
+
+    // JIS Keyboard Remapping: Force US Layout behavior on JIS hardware
+    // This maps Physical JIS Keys to Logical US Characters
+    if AppState.shared.autoSwitchToUSLayout && !ctrl && !flags.contains(.maskCommand) && !flags.contains(.maskAlternate) {
+        
+        var remappedChar: Character?
+        
+        // Dictionary mapping: KeyCode -> (UnshiftedChar, ShiftedChar)
+        // 0x1B: Minus (-), 0x18: Equal (=), 0x21: LeftBracket ([), 0x1E: RightBracket (])
+        // 0x29: Semicolon (;), 0x27: Quote (')
+        // Numbers 2, 6, 7, 8, 9, 0 are handled in shifted map
+        
+        if shift {
+            // SHIFTED MAPPINGS (JIS Shift+Key -> US Symbol)
+            let shiftedMap: [UInt16: Character] = [
+                // Numbers
+                0x13: "@",  // Shift+2: JIS=" → US=@
+                0x16: "^",  // Shift+6: JIS=& → US=^
+                0x1A: "&",  // Shift+7: JIS=' → US=&
+                0x1C: "*",  // Shift+8: JIS=( → US=*
+                0x19: "(",  // Shift+9: JIS=) → US=(
+                0x1D: ")",  // Shift+0: JIS=(none) → US=)
+                
+                // Symbols
+                0x1B: "_",  // Shift+Minus: JIS== → US=_
+                0x18: "+",  // Shift+^ (JIS key): JIS=~ → US=+
+                0x21: "{",  // Shift+@ (JIS key): JIS=` → US={
+                0x1E: "}",  // Shift+[ (JIS key): JIS={ → US=}
+                0x29: ":",  // Shift+; (JIS key): JIS=+ → US=:
+                0x27: "\"", // Shift+: (JIS key): JIS=* → US="
+                0x2A: "|",  // Shift+] (JIS key): JIS=} → US=|
+            ]
+            remappedChar = shiftedMap[keyCode]
+        } else {
+            // UNSHIFTED MAPPINGS (JIS Key -> US Symbol)
+            let unshiftedMap: [UInt16: Character] = [
+                0x18: "=",  // Key ^ (JIS): JIS=^ → US==
+                0x21: "[",  // Key @ (JIS): JIS=@ → US=[
+                0x1E: "]",  // Key [ (JIS): JIS=[ → US=]
+                0x27: "'",  // Key : (JIS): JIS=: → US='
+                0x2A: "\\", // Key ] (JIS): JIS=] → US=\
+            ]
+            remappedChar = unshiftedMap[keyCode]
+        }
+        
+        if let char = remappedChar {
+            // Inject the correct US character directly
+            let (method, delays) = detectMethod()
+            sendReplacement(backspace: 0, chars: [char], method: method, delays: delays, proxy: proxy)
+            
+            // Special handling for functional keys (like bracket) to ensure they work as intended? 
+            // Ideally we consume the event so correct char is typed.
+            return nil
+        }
+    }
 
     // Enter: submit and trigger auto-capitalize pending state
     // IMPORTANT: Send Enter to engine FIRST to trigger auto-capitalize pending state,
@@ -1115,8 +1177,15 @@ private func keyboardCallback(
     }
 
     // Backspace handling: try to restore word from screen when backspacing into it
-    // This enables editing marks on previously committed words
-    if keyCode == KeyCode.backspace && !ctrl {
+    // REMAP: On JIS keyboards modded to US, logic might need adjustment
+    // If we receive a JIS Yen (0x5D), treat it as Backspace if it's in the Backspace position
+    var effectiveKeyCode = keyCode
+    if keyCode == KeyCode.jisYen {
+        Log.info("Remapping JIS Yen (0x5D) to Backspace (0x33)")
+        effectiveKeyCode = KeyCode.backspace
+    }
+
+    if effectiveKeyCode == KeyCode.backspace && !ctrl {
         // For selectAll method: handle backspace (only when enabled)
         if method == .selectAll && AppState.shared.isEnabled {
             let session = TextInjector.shared.getSessionBuffer()
@@ -1132,8 +1201,9 @@ private func keyboardCallback(
         }
 
         // First try Rust engine (handles immediate backspace-after-space)
-        if let (bs, chars, _) = RustBridge.processKey(keyCode: keyCode, caps: caps, ctrl: ctrl, shift: shift) {
-            Log.key(keyCode, "backspace: bs=\(bs) chars='\(String(chars))'")
+        // Use effectiveKeyCode for processing
+        if let (bs, chars, _) = RustBridge.processKey(keyCode: effectiveKeyCode, caps: caps, ctrl: ctrl, shift: shift) {
+            Log.key(effectiveKeyCode, "backspace: bs=\(bs) chars='\(String(chars))'")
             sendReplacement(backspace: bs, chars: chars, method: method, delays: delays, proxy: proxy)
             return nil
         }

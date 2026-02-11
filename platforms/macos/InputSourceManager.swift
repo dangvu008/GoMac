@@ -174,8 +174,159 @@ private let inputSourceCallback: CFNotificationCallback = { _, observer, _, _, _
     }
 }
 
-// MARK: - Notification
-
 extension Notification.Name {
     static let inputSourceChanged = Notification.Name("inputSourceChanged")
 }
+
+// MARK: - Keyboard Layout Switcher
+
+/**
+ * File: KeyboardLayoutSwitcher (trong InputSourceManager.swift)
+ * Purpose: Chuyển đổi keyboard layout programmatically sang US hoặc layout Latin
+ *
+ * Input: Không có (sử dụng TIS API để tìm và kích hoạt layout)
+ * Output: Bool - true nếu chuyển đổi thành công
+ *
+ * Flow:
+ * 1. Lấy danh sách tất cả keyboard layouts có sẵn
+ * 2. Tìm U.S. layout (ưu tiên) hoặc ABC layout (fallback)
+ * 3. Gọi TISSelectInputSource để kích hoạt layout
+ *
+ * Security Note: Sử dụng Carbon API công khai, không yêu cầu quyền đặc biệt
+ */
+final class KeyboardLayoutSwitcher {
+    static let shared = KeyboardLayoutSwitcher()
+    
+    /// Target layout IDs in priority order
+    private let preferredLayoutIds = [
+        "com.apple.keylayout.US",           // U.S. layout
+        "com.apple.keylayout.ABC",          // ABC layout (fallback)
+        "com.apple.keylayout.USExtended",   // U.S. Extended
+        "com.apple.keylayout.British",      // British (similar to US)
+    ]
+    
+    private init() {}
+    
+    /// Switch to U.S. keyboard layout (or best Latin alternative)
+    /// - Returns: true if successfully switched, false otherwise
+    @discardableResult
+    func switchToUSLayout() -> Bool {
+        // Lấy layout hiện tại để check xem có cần switch không
+        if let currentId = getCurrentLayoutId(),
+           preferredLayoutIds.contains(where: { currentId.contains($0.replacingOccurrences(of: "com.apple.keylayout.", with: "")) }) {
+            print("[KeyboardLayoutSwitcher] Already using preferred layout: \(currentId)")
+            return true
+        }
+        
+        // Tìm và kích hoạt layout US
+        for targetId in preferredLayoutIds {
+            if let source = findInputSource(withId: targetId) {
+                let status = TISSelectInputSource(source)
+                if status == noErr {
+                    print("[KeyboardLayoutSwitcher] Switched to: \(targetId)")
+                    return true
+                } else {
+                    print("[KeyboardLayoutSwitcher] Failed to switch to \(targetId), status: \(status)")
+                }
+            }
+        }
+        
+        // Fallback: tìm bất kỳ layout Latin nào
+        if let latinSource = findAnyLatinLayout() {
+            let status = TISSelectInputSource(latinSource)
+            if status == noErr {
+                print("[KeyboardLayoutSwitcher] Switched to fallback Latin layout")
+                return true
+            }
+        }
+        
+        print("[KeyboardLayoutSwitcher] No suitable Latin keyboard layout found")
+        return false
+    }
+    
+    /// Get current input source ID
+    func getCurrentLayoutId() -> String? {
+        guard let source = TISCopyCurrentKeyboardInputSource()?.takeRetainedValue(),
+              let idPtr = TISGetInputSourceProperty(source, kTISPropertyInputSourceID) else {
+            return nil
+        }
+        return Unmanaged<CFString>.fromOpaque(idPtr).takeUnretainedValue() as String
+    }
+    
+    /// Find input source by ID
+    private func findInputSource(withId targetId: String) -> TISInputSource? {
+        let filter: [CFString: Any] = [
+            kTISPropertyInputSourceID: targetId,
+            kTISPropertyInputSourceIsSelectCapable: true
+        ]
+        
+        guard let sources = TISCreateInputSourceList(filter as CFDictionary, false)?.takeRetainedValue() as? [TISInputSource],
+              let source = sources.first else {
+            return nil
+        }
+        
+        return source
+    }
+    
+    /// Find any selectable Latin-based keyboard layout
+    private func findAnyLatinLayout() -> TISInputSource? {
+        let filter: [CFString: Any] = [
+            kTISPropertyInputSourceCategory: kTISCategoryKeyboardInputSource,
+            kTISPropertyInputSourceIsSelectCapable: true
+        ]
+        
+        guard let sources = TISCreateInputSourceList(filter as CFDictionary, false)?.takeRetainedValue() as? [TISInputSource] else {
+            return nil
+        }
+        
+        // Tìm layout có language code là Latin-based (en, de, fr, etc.)
+        let latinLanguages = Set(["en", "de", "fr", "es", "it", "pt", "nl", "pl", "sv", "da", "no", "fi"])
+        
+        for source in sources {
+            guard let langsPtr = TISGetInputSourceProperty(source, kTISPropertyInputSourceLanguages),
+                  let langs = Unmanaged<CFArray>.fromOpaque(langsPtr).takeUnretainedValue() as? [String],
+                  let lang = langs.first else {
+                continue
+            }
+            
+            let baseLang = String(lang.split(separator: "-").first ?? Substring(lang))
+            if latinLanguages.contains(baseLang) {
+                return source
+            }
+        }
+        
+        return nil
+    }
+    
+    /// Get list of available Latin keyboard layouts (for debugging/UI)
+    func getAvailableLatinLayouts() -> [(id: String, name: String)] {
+        let filter: [CFString: Any] = [
+            kTISPropertyInputSourceCategory: kTISCategoryKeyboardInputSource,
+            kTISPropertyInputSourceIsSelectCapable: true
+        ]
+        
+        guard let sources = TISCreateInputSourceList(filter as CFDictionary, false)?.takeRetainedValue() as? [TISInputSource] else {
+            return []
+        }
+        
+        var layouts: [(id: String, name: String)] = []
+        
+        for source in sources {
+            guard let idPtr = TISGetInputSourceProperty(source, kTISPropertyInputSourceID),
+                  let namePtr = TISGetInputSourceProperty(source, kTISPropertyLocalizedName) else {
+                continue
+            }
+            
+            let id = Unmanaged<CFString>.fromOpaque(idPtr).takeUnretainedValue() as String
+            let name = Unmanaged<CFString>.fromOpaque(namePtr).takeUnretainedValue() as String
+            
+            // Chỉ liệt kê keyboard layouts (không phải input methods)
+            if id.contains("keylayout") {
+                layouts.append((id: id, name: name))
+            }
+        }
+        
+        return layouts
+    }
+}
+

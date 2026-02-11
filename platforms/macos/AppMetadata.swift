@@ -5,30 +5,36 @@ import AppKit
 // All project metadata in one place for consistency
 
 enum AppMetadata {
-    static let name = "Gõ Nhanh"
+    static let name = "GoMac"
 
     // App Logo - dùng chung cho mọi nơi
     static var logo: NSImage {
         NSImage(named: "AppLogo") ?? NSApp.applicationIconImage ?? NSImage()
     }
-    static let displayName = "Gõ Nhanh"
+    static let displayName = "GoMac"
     static let tagline = "Bộ gõ tiếng Việt hiệu suất cao"
     static let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
     static let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
 
     // Author
-    static let author = "Kha Phan"
-    static let authorEmail = "nhatkha1407@gmail.com"
+    static let author = "DangVu"
+    static let authorEmail = "dangvu008@gmail.com"
 
     // Links
-    static let website = "https://gonhanh.org"
-    static let repository = "https://github.com/khaphanspace/gonhanh.org"
-    static let issuesURL = "https://github.com/khaphanspace/gonhanh.org/issues"
-    static let sponsorURL = "https://github.com/sponsors/khaphanspace"
-    static let authorLinkedin = "https://www.linkedin.com/in/khaphanspace"
+    static let website = "https://github.com/dangvu008"
+    static let repository = "https://github.com/dangvu008/GoMac"
+    static let issuesURL = "https://github.com/dangvu008/GoMac/issues"
+    static let sponsorURL = "https://github.com/sponsors/dangvu008"
+    static let authorProfile = "https://github.com/dangvu008"
+
+    // Original Author Credit
+    static let originalAuthor = "Kha Phan"
+    static let originalWebsite = "https://gonhanh.org"
+    static let originalRepository = "https://github.com/khaphanspace/gonhanh.org"
+    static let originalAuthorProfile = "https://www.linkedin.com/in/khaphanspace"
 
     // Legal
-    static let copyright = "Copyright © 2025 \(author). All rights reserved."
+    static let copyright = "Copyright © 2026 \(author). All rights reserved."
     static let license = "GPL-3.0-or-later"
 
     // Tech
@@ -39,7 +45,8 @@ enum AppMetadata {
         """
         \(tagline)
 
-        Tác giả: \(author)
+        Tuỳ biến bởi: \(author)
+        Dựa trên: gonhanh.org bởi \(originalAuthor)
 
         Made with Rust + SwiftUI
         """
@@ -52,8 +59,8 @@ enum AppMetadata {
 
         \(tagline)
 
-        Tác giả: \(author)
-        Website: \(website)
+        Tuỳ biến bởi: \(author)
+        Dự án gốc: gonhanh.org bởi \(originalAuthor)
         GitHub: \(repository)
 
         \(copyright)
@@ -83,6 +90,7 @@ enum SettingsKey {
     static let autoCapitalize = "gonhanh.autoCapitalize"
     static let launchAtLoginUserDisabled = "gonhanh.launchAtLogin.userDisabled"
     static let soundEnabled = "gonhanh.soundEnabled"
+    static let autoSwitchToUSLayout = "gonhanh.autoSwitchToUSLayout"
 }
 
 // MARK: - Keyboard Shortcut Model
