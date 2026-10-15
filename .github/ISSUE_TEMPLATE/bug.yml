@@ -78,8 +78,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: Phiên bản Gõ Nhanh
-      description: Xem trong menu Gõ Nhanh > About
+      label: Phiên bản VKey
+      description: Xem trong menu VKey > About
       placeholder: "1.0.64"
 
   - type: dropdown
@@ -98,7 +98,7 @@ body:
     attributes:
       label: Cung cấp debug log
       description: |
-        1. Bật log: `touch /tmp/gonhanh_debug.log && tail -f /tmp/gonhanh_debug.log`
+        1. Bật log: `touch /tmp/vkey_debug.log && tail -f /tmp/vkey_debug.log`
         2. Gõ lại từ/cụm từ bị lỗi, copy log paste vào ô dưới
-        3. Xoá log: `rm -f /tmp/gonhanh_debug.log`
+        3. Xoá log: `rm -f /tmp/vkey_debug.log`
       placeholder: Paste debug log vào đây...

@@ -39,6 +39,12 @@ struct AboutView: View {
                 versionBadge(label: "Build", value: AppMetadata.buildNumber)
             }
             .padding(.top, 4)
+
+            // Build info
+            HStack(spacing: 8) {
+                versionBadge(label: "Commit", value: AppMetadata.gitHash)
+                versionBadge(label: "Built", value: AppMetadata.buildDate)
+            }
         }
         .padding(.vertical, 24)
         .padding(.horizontal, 32)
@@ -70,7 +76,7 @@ struct AboutView: View {
             infoRow(icon: "hammer.fill", title: "Built with", value: AppMetadata.techStack)
             infoRow(icon: "doc.text.fill", title: "License", value: AppMetadata.license)
             Divider().padding(.vertical, 4)
-            infoRow(icon: "arrow.triangle.branch", title: "Dựa trên", value: "gonhanh.org", isLink: true, url: AppMetadata.originalWebsite)
+            infoRow(icon: "arrow.triangle.branch", title: "Dựa trên", value: "vkey.org", isLink: true, url: AppMetadata.originalWebsite)
             infoRow(icon: "person.fill", title: "Tác giả gốc", value: AppMetadata.originalAuthor, isLink: true, url: AppMetadata.originalAuthorProfile)
         }
         .padding(.vertical, 16)
@@ -186,6 +192,8 @@ struct AboutView: View {
     }
 }
 
+#if DEBUG && canImport(PreviewsMacros)
 #Preview {
     AboutView()
 }
+#endif

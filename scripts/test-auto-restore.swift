@@ -1,5 +1,5 @@
 #!/usr/bin/env swift
-// Auto-restore test for GoNhanh - Tests English word detection
+// Auto-restore test for VKey - Tests English word detection
 // Tests common English words that macOS Telex incorrectly converts
 
 import Foundation
@@ -13,7 +13,7 @@ let keycodes: [Character: UInt16] = [
     " ": 49, ",": 43, ".": 47, "[": 33, "]": 30, ":": 41, "/": 44
 ]
 
-let configPath = "/tmp/gonhanh_config.txt"
+let configPath = "/tmp/vkey_config.txt"
 
 var typeDelay: UInt32 = 50000  // 50ms between keys
 
@@ -53,7 +53,7 @@ func setConfig(_ config: String) {
 // AUTO-RESTORE TEST - Common English words that macOS Telex breaks
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// | Gõ      | macOS Telex | Gõ Nhanh |
+// | Gõ      | macOS Telex | VKey |
 // |---------|-------------|----------|
 // | text    | têt ❌      | text ✅  |
 // | expect  | ễpct ❌     | expect ✅|
@@ -74,7 +74,7 @@ func setConfig(_ config: String) {
 let testParagraph = "Chafo cacs banfj, minhf ddang tesst Gox Nhanh. Smart auto restore: text, expect, perfect, window, with, their, wow, luxury, tesla, life, issue, feature, express, wonderful, support, core, care, saas, sax, push, work, hard, user. Per app memory: VS Code, Slack. Auto disable: Japanese, Korean, Chinese. DDawsk Lawsk, DDawsk Noong, Kroong Buks. Thanks for your wonderful support with thiss software."
 
 // Expected output: Vietnamese converted, English preserved
-let expectedOutput = "Chào các bạn, mình đang test Gõ Nhanh. Smart auto restore: text, expect, perfect, window, with, their, wow, luxury, tesla, life, issue, feature, express, wonderful, support, core, care, saas, sax, push, work, hard, user. Per app memory: VS Code, Slack. Auto disable: Japanese, Korean, Chinese. Đắk Lắk, Đắk Nông, Krông Búk. Thanks for your wonderful support with this software."
+let expectedOutput = "Chào các bạn, mình đang test VKey. Smart auto restore: text, expect, perfect, window, with, their, wow, luxury, tesla, life, issue, feature, express, wonderful, support, core, care, saas, sax, push, work, hard, user. Per app memory: VS Code, Slack. Auto disable: Japanese, Korean, Chinese. Đắk Lắk, Đắk Nông, Krông Búk. Thanks for your wonderful support with this software."
 
 func runTest() {
     print("")
@@ -103,7 +103,7 @@ func runTest() {
 // Main
 print("")
 print("══════════════════════════════════════════")
-print("     GoNhanh Auto-Restore Test")
+print("     VKey Auto-Restore Test")
 print("══════════════════════════════════════════")
 print("")
 print(" Input (Telex):")

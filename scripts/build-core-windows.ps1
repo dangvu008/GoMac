@@ -1,4 +1,4 @@
-# GoNhanh Windows Core Build Script
+# VKey Windows Core Build Script
 # Run: powershell -ExecutionPolicy Bypass -File scripts/build-core-windows.ps1
 
 param(
@@ -9,12 +9,12 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "Building GoNhanh Core for Windows" -ForegroundColor Cyan
+Write-Host "Building VKey Core for Windows" -ForegroundColor Cyan
 Write-Host "=================================" -ForegroundColor Cyan
 
 $projectRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $coreDir = Join-Path $projectRoot "core"
-$outputDir = Join-Path $projectRoot "platforms/windows/GoNhanh/Native"
+$outputDir = Join-Path $projectRoot "platforms/windows/VKey/Native"
 
 # Ensure output directory exists
 if (-not (Test-Path $outputDir)) {
@@ -32,8 +32,8 @@ Push-Location $coreDir
 try {
     cargo build $buildFlag --target x86_64-pc-windows-msvc
 
-    $srcDll = Join-Path $coreDir "target/x86_64-pc-windows-msvc/$buildType/gonhanh_core.dll"
-    $dstDll = Join-Path $outputDir "gonhanh_core.dll"
+    $srcDll = Join-Path $coreDir "target/x86_64-pc-windows-msvc/$buildType/vkey_core.dll"
+    $dstDll = Join-Path $outputDir "vkey_core.dll"
 
     if (Test-Path $srcDll) {
         Copy-Item $srcDll $dstDll -Force
@@ -56,8 +56,8 @@ if ($x86) {
     try {
         cargo build $buildFlag --target i686-pc-windows-msvc
 
-        $srcDll = Join-Path $coreDir "target/i686-pc-windows-msvc/$buildType/gonhanh_core.dll"
-        $dstDll = Join-Path $outputDir "gonhanh_core_x86.dll"
+        $srcDll = Join-Path $coreDir "target/i686-pc-windows-msvc/$buildType/vkey_core.dll"
+        $dstDll = Join-Path $outputDir "vkey_core_x86.dll"
 
         if (Test-Path $srcDll) {
             Copy-Item $srcDll $dstDll -Force
@@ -75,8 +75,8 @@ if ($ARM64) {
     try {
         cargo build $buildFlag --target aarch64-pc-windows-msvc
 
-        $srcDll = Join-Path $coreDir "target/aarch64-pc-windows-msvc/$buildType/gonhanh_core.dll"
-        $dstDll = Join-Path $outputDir "gonhanh_core_arm64.dll"
+        $srcDll = Join-Path $coreDir "target/aarch64-pc-windows-msvc/$buildType/vkey_core.dll"
+        $dstDll = Join-Path $outputDir "vkey_core_arm64.dll"
 
         if (Test-Path $srcDll) {
             Copy-Item $srcDll $dstDll -Force

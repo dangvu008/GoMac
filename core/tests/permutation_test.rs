@@ -10,7 +10,7 @@
 //! the same Vietnamese output.
 
 mod common;
-use common::{telex, telex_auto_restore};
+use common::telex;
 
 // =============================================================================
 // CORE CONCEPT: Modifier Position Permutations
@@ -339,23 +339,6 @@ fn valid_vietnamese_not_restored() {
         ("nafo ", "nào "), // not restored to "nafo"
         ("gasi ", "gái "), // not restored to "gasi"
         ("baro ", "bảo "), // not restored to "baro"
-    ]);
-}
-
-/// English words that should auto-restore
-/// Unified logic: only restore when buffer is INVALID Vietnamese
-#[test]
-fn english_words_restored() {
-    telex_auto_restore(&[
-        ("view ", "view "),  // should restore (vieư invalid VI)
-        ("raw ", "raw "),    // should restore
-        ("law ", "law "),    // should restore
-        ("saw ", "saw "),    // should restore
-        ("data ", "data "),  // should restore (dât = circumflex + stop consonant, not real VI)
-        ("half ", "half "),  // should restore
-        ("wolf ", "wolf "),  // should restore
-        ("sims ", "sims "),  // sím (invalid VI) → restore to sims
-        ("simss ", "sims "), // double s reverts mark → sims (not simss)
     ]);
 }
 

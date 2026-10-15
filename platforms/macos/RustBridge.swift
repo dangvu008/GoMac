@@ -4,11 +4,11 @@ import AppKit
 
 // MARK: - Debug Logging
 
-/// Debug logging - only active when /tmp/gonhanh_debug.log exists
-/// Enable: touch /tmp/gonhanh_debug.log | Disable: rm /tmp/gonhanh_debug.log
+/// Debug logging - only active when /tmp/vkey_debug.log exists
+/// Enable: touch /tmp/vkey_debug.log | Disable: rm /tmp/vkey_debug.log
 /// PERFORMANCE: isEnabled cached, @autoclosure defers string formatting until needed
 private enum Log {
-    private static let logPath = "/tmp/gonhanh_debug.log"
+    private static let logPath = "/tmp/vkey_debug.log"
     private static var _enabled: Bool?
     static var isEnabled: Bool {
         if let cached = _enabled { return cached }
@@ -505,8 +505,8 @@ private let FLAG_KEY_CONSUMED: UInt8 = 0x01  // Key was consumed by shortcut, do
 @_silgen_name("ime_esc_restore") private func ime_esc_restore(_ enabled: Bool)
 @_silgen_name("ime_free_tone") private func ime_free_tone(_ enabled: Bool)
 @_silgen_name("ime_modern") private func ime_modern(_ modern: Bool)
-@_silgen_name("ime_english_auto_restore") private func ime_english_auto_restore(_ enabled: Bool)
-@_silgen_name("ime_auto_capitalize") private func ime_auto_capitalize(_ enabled: Bool)
+
+
 @_silgen_name("ime_clear") private func ime_clear()
 @_silgen_name("ime_clear_all") private func ime_clear_all()
 @_silgen_name("ime_free") private func ime_free(_ result: UnsafeMutablePointer<ImeResult>?)
@@ -521,6 +521,18 @@ private let FLAG_KEY_CONSUMED: UInt8 = 0x01  // Key was consumed by shortcut, do
 
 // Buffer FFI (for Select All method)
 @_silgen_name("ime_get_buffer") private func ime_get_buffer(_ out: UnsafeMutablePointer<UInt32>, _ maxLen: Int) -> Int
+
+// Custom Key Mapping FFI
+@_silgen_name("ime_set_custom_mark") private func ime_set_custom_mark(_ method: UInt8, _ markId: UInt8, _ keycode: UInt16)
+@_silgen_name("ime_set_custom_stroke") private func ime_set_custom_stroke(_ method: UInt8, _ keycode: UInt16)
+@_silgen_name("ime_set_custom_remove") private func ime_set_custom_remove(_ method: UInt8, _ keycode: UInt16)
+@_silgen_name("ime_set_custom_tone") private func ime_set_custom_tone(_ method: UInt8, _ slot: UInt8, _ keycode: UInt16, _ toneType: UInt8, _ targetSet: UInt8)
+@_silgen_name("ime_reset_custom") private func ime_reset_custom(_ method: UInt8)
+
+// Shift+Key Mapping FFI
+@_silgen_name("ime_set_shift_key") private func ime_set_shift_key(_ method: UInt8, _ keycode: UInt16, _ outputChar: UInt32)
+@_silgen_name("ime_remove_shift_key") private func ime_remove_shift_key(_ method: UInt8, _ keycode: UInt16)
+@_silgen_name("ime_clear_shift_keys") private func ime_clear_shift_keys(_ method: UInt8)
 
 // MARK: - RustBridge (Public API)
 
@@ -575,11 +587,11 @@ class RustBridge {
 
     /// Set whether to enable English auto-restore (experimental)
     /// When enabled, automatically restores English words that were transformed
-    static func setEnglishAutoRestore(_ enabled: Bool) { ime_english_auto_restore(enabled) }
+
 
     /// Set whether to enable auto-capitalize after sentence-ending punctuation
     /// When enabled, capitalizes first letter after . ! ? Enter
-    static func setAutoCapitalize(_ enabled: Bool) { ime_auto_capitalize(enabled) }
+
 
     static func clearBuffer() { ime_clear() }
 
@@ -621,6 +633,67 @@ class RustBridge {
         ime_clear_shortcuts()
         for shortcut in shortcuts where shortcut.enabled {
             addShortcut(trigger: shortcut.key, replacement: shortcut.value)
+        }
+    }
+
+    // MARK: - Custom Key Mapping
+
+    /// Set a custom mark key for a given input method
+    /// method: 0 = Telex, 1 = VNI
+    /// markId: 1=sắc, 2=huyền, 3=hỏi, 4=ngã, 5=nặng
+    static func setCustomMark(method: UInt8, markId: UInt8, keyCode: UInt16) {
+        ime_set_custom_mark(method, markId, keyCode)
+    }
+
+    /// Set a custom stroke key (d → đ)
+    static func setCustomStroke(method: UInt8, keyCode: UInt16) {
+        ime_set_custom_stroke(method, keyCode)
+    }
+
+    /// Set a custom remove key (remove diacritics)
+    static func setCustomRemove(method: UInt8, keyCode: UInt16) {
+        ime_set_custom_remove(method, keyCode)
+    }
+
+    /// Set a custom tone key (double-key characters: â/ê/ô/ơ/ư/ă)
+    /// slot: tone entry index (0-3)
+    /// toneType: 0=Circumflex, 1=Horn, 2=Breve
+    /// targetSet: 0=A, 1=E, 2=O, 3=HORN_TELEX, 4=CIRCUMFLEX, 5=HORN_VNI, 6=BREVE
+    static func setCustomTone(method: UInt8, slot: UInt8, keyCode: UInt16, toneType: UInt8, targetSet: UInt8) {
+        ime_set_custom_tone(method, slot, keyCode, toneType, targetSet)
+    }
+
+    /// Reset custom key mappings to defaults
+    static func resetCustomKeyMap(method: UInt8) {
+        ime_reset_custom(method)
+    }
+
+    // MARK: - Shift+Key Mapping (Double-Key)
+
+    /// Set a Shift+Key → Character mapping
+    /// method: 0 = Telex, 1 = VNI
+    /// keyCode: macOS virtual keycode for the base key
+    /// outputChar: Unicode codepoint for the output character (e.g., 0x0102 for Ă)
+    static func setShiftKey(method: UInt8, keyCode: UInt16, outputChar: UInt32) {
+        ime_set_shift_key(method, keyCode, outputChar)
+    }
+
+    /// Remove a Shift+Key mapping
+    static func removeShiftKey(method: UInt8, keyCode: UInt16) {
+        ime_remove_shift_key(method, keyCode)
+    }
+
+    /// Clear all Shift+Key mappings
+    static func clearShiftKeys(method: UInt8) {
+        ime_clear_shift_keys(method)
+    }
+
+    /// Sync Shift+Key mappings from settings to engine
+    /// shiftKeys: dictionary of keycode → unicode codepoint
+    static func syncShiftKeys(method: UInt8, shiftKeys: [UInt16: UInt32]) {
+        ime_clear_shift_keys(method)
+        for (keyCode, outputChar) in shiftKeys {
+            ime_set_shift_key(method, keyCode, outputChar)
         }
     }
 }
@@ -701,8 +774,8 @@ class KeyboardHookManager {
     private func showAccessibilityAlert() {
         DispatchQueue.main.async {
             let alert = NSAlert()
-            alert.messageText = "Cần quyền Accessibility"
-            alert.informativeText = "Gõ Nhanh cần quyền Accessibility để gõ tiếng Việt.\n\n1. Mở System Settings > Privacy & Security > Accessibility\n2. Bật Gõ Nhanh\n3. Khởi động lại app"
+            alert.messageText = "Chưa cấp quyền Accessibility"
+            alert.informativeText = "VKey cần quyền Accessibility để gõ tiếng Việt.\n\n1. Mở System Settings > Privacy & Security > Accessibility\n2. Bật VKey\n3. Khởi động lại app"
             alert.alertStyle = .warning
             alert.addButton(withTitle: "Mở System Settings")
             alert.addButton(withTitle: "Hủy")
@@ -986,16 +1059,6 @@ private func keyboardCallback(
         }
         wasControlPressed = isControlNowPressed
 
-        // Handle modifier-only restore shortcut (e.g., Ctrl alone, Shift alone)
-        if AppState.shared.restoreShortcutEnabled && currentRestoreShortcut.isModifierOnly {
-            if currentRestoreShortcut.matchesModifierOnly(flags: flags) {
-                wasRestoreModifierPressed = true
-            } else if wasRestoreModifierPressed {
-                wasRestoreModifierPressed = false
-                triggerRestoreShortcut(flags: flags, proxy: proxy)
-            }
-        }
-
         if matchesModifierOnlyShortcut(flags: flags) {
             wasModifierShortcutPressed = true
         } else if wasModifierShortcutPressed {
@@ -1030,60 +1093,7 @@ private func keyboardCallback(
     let caps = shift || flags.contains(.maskAlphaShift)
     let ctrl = flags.contains(.maskCommand) || flags.contains(.maskControl) || flags.contains(.maskAlternate)
 
-    // JIS Keyboard Remapping: Force US Layout behavior on JIS hardware
-    // This maps Physical JIS Keys to Logical US Characters
-    if AppState.shared.autoSwitchToUSLayout && !ctrl && !flags.contains(.maskCommand) && !flags.contains(.maskAlternate) {
-        
-        var remappedChar: Character?
-        
-        // Dictionary mapping: KeyCode -> (UnshiftedChar, ShiftedChar)
-        // 0x1B: Minus (-), 0x18: Equal (=), 0x21: LeftBracket ([), 0x1E: RightBracket (])
-        // 0x29: Semicolon (;), 0x27: Quote (')
-        // Numbers 2, 6, 7, 8, 9, 0 are handled in shifted map
-        
-        if shift {
-            // SHIFTED MAPPINGS (JIS Shift+Key -> US Symbol)
-            let shiftedMap: [UInt16: Character] = [
-                // Numbers
-                0x13: "@",  // Shift+2: JIS=" → US=@
-                0x16: "^",  // Shift+6: JIS=& → US=^
-                0x1A: "&",  // Shift+7: JIS=' → US=&
-                0x1C: "*",  // Shift+8: JIS=( → US=*
-                0x19: "(",  // Shift+9: JIS=) → US=(
-                0x1D: ")",  // Shift+0: JIS=(none) → US=)
-                
-                // Symbols
-                0x1B: "_",  // Shift+Minus: JIS== → US=_
-                0x18: "+",  // Shift+^ (JIS key): JIS=~ → US=+
-                0x21: "{",  // Shift+@ (JIS key): JIS=` → US={
-                0x1E: "}",  // Shift+[ (JIS key): JIS={ → US=}
-                0x29: ":",  // Shift+; (JIS key): JIS=+ → US=:
-                0x27: "\"", // Shift+: (JIS key): JIS=* → US="
-                0x2A: "|",  // Shift+] (JIS key): JIS=} → US=|
-            ]
-            remappedChar = shiftedMap[keyCode]
-        } else {
-            // UNSHIFTED MAPPINGS (JIS Key -> US Symbol)
-            let unshiftedMap: [UInt16: Character] = [
-                0x18: "=",  // Key ^ (JIS): JIS=^ → US==
-                0x21: "[",  // Key @ (JIS): JIS=@ → US=[
-                0x1E: "]",  // Key [ (JIS): JIS=[ → US=]
-                0x27: "'",  // Key : (JIS): JIS=: → US='
-                0x2A: "\\", // Key ] (JIS): JIS=] → US=\
-            ]
-            remappedChar = unshiftedMap[keyCode]
-        }
-        
-        if let char = remappedChar {
-            // Inject the correct US character directly
-            let (method, delays) = detectMethod()
-            sendReplacement(backspace: 0, chars: [char], method: method, delays: delays, proxy: proxy)
-            
-            // Special handling for functional keys (like bracket) to ensure they work as intended? 
-            // Ideally we consume the event so correct char is typed.
-            return nil
-        }
-    }
+
 
     // Enter: submit and trigger auto-capitalize pending state
     // IMPORTANT: Send Enter to engine FIRST to trigger auto-capitalize pending state,
@@ -1106,12 +1116,6 @@ private func keyboardCallback(
 
         TextInjector.shared.clearSessionBuffer()
         return Unmanaged.passUnretained(event)
-    }
-    // Issue #149: Restore shortcut - restore raw ASCII if enabled
-    // Issue #157: Pass key through after restore so it still functions normally (Tab inserts tab, ESC closes dialog)
-    if AppState.shared.restoreShortcutEnabled && matchesRestoreShortcut(keyCode: keyCode, flags: flags) {
-        triggerRestoreShortcut(flags: flags, proxy: proxy)
-        return Unmanaged.passUnretained(event)  // Pass key through after restore
     }
 
     // Detect injection method once per keystroke (expensive AX query)
@@ -1225,16 +1229,6 @@ private func keyboardCallback(
     let isLetterKey = keyCode <= 0x32 && keyCode != KeyCode.backspace  // Rough check for letter keys
     if isLetterKey {
         skipWordRestoreAfterClick = false
-    }
-
-    // Block ESC from reaching Rust if restoreShortcutEnabled is enabled but shortcut is NOT ESC
-    // This prevents Rust from auto-restoring when user configured a different shortcut
-    if keyCode == KeyCode.esc && AppState.shared.restoreShortcutEnabled {
-        let isEscShortcut = currentRestoreShortcut.keyCode == KeyCode.esc && currentRestoreShortcut.modifiers == 0
-        if !isEscShortcut {
-            // ESC pressed but shortcut is not ESC - just pass through without restore
-            return Unmanaged.passUnretained(event)
-        }
     }
 
     if let (bs, chars, keyConsumed) = RustBridge.processKey(keyCode: keyCode, caps: caps, ctrl: ctrl, shift: shift) {

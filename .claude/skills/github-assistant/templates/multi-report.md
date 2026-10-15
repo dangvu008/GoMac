@@ -20,7 +20,7 @@ Cảm ơn các bạn đã góp ý!
 
 📥 **Vui lòng cập nhật lên v[version]** để sử dụng các bản fix mới.
 
-Cảm ơn đã đồng hành cùng Gõ Nhanh! 🙏
+Cảm ơn đã đồng hành cùng VKey! 🙏
 ```
 
 ## Status Options
@@ -53,5 +53,5 @@ Cảm ơn các bạn đã góp ý!
 
 📥 **Vui lòng cập nhật lên v1.0.85** để sử dụng các bản fix mới.
 
-Cảm ơn đã đồng hành cùng Gõ Nhanh! 🙏
+Cảm ơn đã đồng hành cùng VKey! 🙏
 ```

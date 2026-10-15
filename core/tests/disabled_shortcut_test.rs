@@ -1,7 +1,7 @@
 //! Test shortcuts work when IME is disabled (English mode)
 
-use gonhanh_core::data::keys;
-use gonhanh_core::engine::{shortcut::Shortcut, Engine};
+use vkey_core::data::keys;
+use vkey_core::engine::{shortcut::Shortcut, Engine};
 
 #[test]
 fn test_word_shortcut_when_disabled_space() {

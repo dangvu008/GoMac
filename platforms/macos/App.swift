@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct GoNhanhApp: App {
+struct VKeyApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
@@ -37,12 +37,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             SettingsKey.perAppMode: true,
             SettingsKey.autoWShortcut: true,
             SettingsKey.bracketShortcut: false,
-            SettingsKey.restoreShortcutEnabled: false,
-            SettingsKey.modernTone: true,
-            SettingsKey.englishAutoRestore: false,
-            SettingsKey.autoCapitalize: false,
-            SettingsKey.soundEnabled: false,
             SettingsKey.autoSwitchToUSLayout: false,
+            SettingsKey.iconStyle: IconStyle.outlineBadge.rawValue,
         ])
     }
 }

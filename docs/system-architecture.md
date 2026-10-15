@@ -1,4 +1,4 @@
-# Gõ Nhanh: System Architecture
+# VKey: System Architecture
 
 ## High-Level Architecture
 
@@ -379,7 +379,7 @@ func getReplacementMethod() -> ReplacementMethod {
 - **User Flow**:
   1. App requests permission on first run
   2. User goes to: System Settings → Privacy & Security → Accessibility
-  3. User adds GoNhanh to the list
+  3. User adds VKey to the list
   4. App restart required to acquire permissions
   5. Once granted, app can create CGEventTap
 

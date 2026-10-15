@@ -714,7 +714,7 @@ mod tests {
 
     // =========================================================================
     // Issue #178: Shortcuts > 63 chars should work
-    // https://github.com/user/gonhanh/issues/178
+    // https://github.com/user/vkey/issues/178
     // =========================================================================
 
     #[test]
@@ -768,7 +768,7 @@ mod tests {
 
     // =========================================================================
     // Issue #86: Smart Case-Aware Shortcuts
-    // https://github.com/khaphanspace/gonhanh.org/issues/86
+    // https://github.com/khaphanspace/vkey.org/issues/86
     // =========================================================================
 
     #[test]

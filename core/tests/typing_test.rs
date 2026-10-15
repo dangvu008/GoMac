@@ -1,7 +1,7 @@
 //! Typing Tests - Real-world typing scenarios, sentences, behaviors
 
 mod common;
-use common::{telex, telex_auto_restore, telex_traditional, vni, vni_traditional};
+use common::{telex, telex_traditional, vni, vni_traditional};
 
 // ============================================================
 // BACKSPACE & CORRECTIONS
@@ -1546,12 +1546,6 @@ fn telex_invalid_breve_diphthong() {
 #[test]
 fn vni_invalid_breve_diphthong() {
     vni(VNI_INVALID_BREVE_DIPHTHONG);
-}
-
-// NOTE: Requires english_auto_restore to be enabled (experimental feature).
-#[test]
-fn telex_english_aw_words() {
-    telex_auto_restore(TELEX_ENGLISH_AW_WORDS);
 }
 
 #[test]

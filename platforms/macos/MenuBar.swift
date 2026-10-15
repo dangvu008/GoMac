@@ -6,6 +6,7 @@ import Combine
 
 extension Notification.Name {
     static let showSettingsPage = Notification.Name("showSettingsPage")
+    static let iconStyleChanged = Notification.Name("iconStyleChanged")
 }
 
 // MARK: - Menu Bar Controller
@@ -22,6 +23,13 @@ class MenuBarController: NSObject, NSWindowDelegate {
     override init() {
         super.init()
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+
+        // Left-click: toggle Vietnamese/English
+        if let button = statusItem.button {
+            button.sendAction(on: [.leftMouseUp])
+            button.action = #selector(handleStatusBarClick(_:))
+            button.target = self
+        }
 
         setupMenu()
         setupNotifications()
@@ -87,6 +95,22 @@ class MenuBarController: NSObject, NSWindowDelegate {
                 self?.updateMenu()
             }
             .store(in: &cancellables)
+
+        // Observe appearance changes (light/dark mode) to redraw colored icon
+        DistributedNotificationCenter.default().addObserver(
+            self,
+            selector: #selector(handleAppearanceChanged),
+            name: Notification.Name("AppleInterfaceThemeChangedNotification"),
+            object: nil
+        )
+
+        // Observe icon style changes
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleIconStyleChanged),
+            name: .iconStyleChanged,
+            object: nil
+        )
     }
 
     @objc private func handleShowSettingsPage() {
@@ -131,9 +155,14 @@ class MenuBarController: NSObject, NSWindowDelegate {
         let quit = NSMenuItem(title: "Thoát \(AppMetadata.name)", action: #selector(NSApp.terminate), keyEquivalent: "q")
         menu.addItem(quit)
 
-        statusItem.menu = menu
+        // Don't assign menu directly — we manage click behavior manually
+        statusItem.menu = nil
+        self._menu = menu
         updateMenu()
     }
+
+    /// Stored menu for right-click popup
+    private var _menu: NSMenu?
 
     private func createHeaderView() -> NSView {
         let view = NSView(frame: NSRect(x: 0, y: 0, width: 220, height: 36))
@@ -164,7 +193,6 @@ class MenuBarController: NSObject, NSWindowDelegate {
                 get: { [weak self] in self?.appState.isEnabled ?? true },
                 set: { [weak self] newValue in
                     self?.appState.isEnabled = newValue
-                    SoundManager.shared.playToggleSound(enabled: newValue)
                 }
             ))
             .toggleStyle(.switch)
@@ -178,7 +206,7 @@ class MenuBarController: NSObject, NSWindowDelegate {
     }
 
     private func updateMenu() {
-        guard let menu = statusItem.menu else { return }
+        guard let menu = _menu else { return }
         menu.item(withTag: 1)?.view = createHeaderView()
         menu.item(withTag: 10)?.state = appState.currentMethod == .telex ? .on : .off
         menu.item(withTag: 11)?.state = appState.currentMethod == .vni ? .on : .off
@@ -192,10 +220,6 @@ class MenuBarController: NSObject, NSWindowDelegate {
 
     @objc private func showAbout() {
         showSettings()
-        // Switch to About page after window is shown
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            NotificationCenter.default.post(name: .showSettingsPage, object: NavigationPage.about)
-        }
     }
 
     private func startEngine() {
@@ -204,23 +228,9 @@ class MenuBarController: NSObject, NSWindowDelegate {
         RustBridge.setEnabled(appState.isEnabled)
         RustBridge.setMethod(appState.currentMethod.rawValue)
 
-        // Sync all engine settings (these were loaded before engine was ready)
-        RustBridge.setModernTone(appState.modernTone)
-        RustBridge.setSkipWShortcut(!appState.autoWShortcut)
-        RustBridge.setBracketShortcut(appState.bracketShortcut)
-        RustBridge.setRestoreShortcutEnabled(appState.restoreShortcutEnabled)
-        RustBridge.setEnglishAutoRestore(appState.englishAutoRestore)
-        RustBridge.setAutoCapitalize(appState.autoCapitalize)
-
         // Sync shortcuts and start per-app mode manager
         appState.syncShortcutsToEngine()
         PerAppModeManager.shared.start()
-
-        // Auto-switch to US keyboard layout if enabled (for JIS keyboards)
-        if appState.autoSwitchToUSLayout {
-            KeyboardLayoutSwitcher.shared.switchToUSLayout()
-        }
-
     }
 
     // MARK: - Status Button
@@ -244,46 +254,206 @@ class MenuBarController: NSObject, NSWindowDelegate {
     }
 
     private func createStatusIcon(text: String) -> NSImage {
+        let style = AppState.shared.iconStyle
+        switch style {
+        case .boldMinimal: return drawBoldMinimal(text: text)
+        case .outlineBadge: return drawOutlineBadge(text: text)
+        case .dotAccent: return drawDotAccent(text: text)
+        case .underline: return drawUnderline(text: text)
+        }
+    }
+
+    // MARK: - Icon Style: Bold Minimal (just bold colored letter, no background)
+
+    private func drawBoldMinimal(text: String) -> NSImage {
+        let width: CGFloat = 18
+        let height: CGFloat = 16
+        let isVietnamese = (text == "V")
+
+        let image = NSImage(size: NSSize(width: width, height: height), flipped: false) { _ in
+            let isDark = NSAppearance.current.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            let color: NSColor
+            if isVietnamese {
+                color = isDark
+                    ? NSColor(calibratedRed: 1.0, green: 0.55, blue: 0.25, alpha: 1.0)
+                    : NSColor(calibratedRed: 0.90, green: 0.40, blue: 0.10, alpha: 1.0)
+            } else {
+                color = isDark
+                    ? NSColor(calibratedRed: 0.65, green: 0.65, blue: 0.68, alpha: 1.0)
+                    : NSColor(calibratedRed: 0.45, green: 0.45, blue: 0.48, alpha: 1.0)
+            }
+
+            let font = NSFont.systemFont(ofSize: 14, weight: .black)
+            let attrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: color]
+            let textSize = text.size(withAttributes: attrs)
+            let textRect = NSRect(
+                x: (width - textSize.width) / 2,
+                y: (height - textSize.height) / 2,
+                width: textSize.width, height: textSize.height
+            )
+            text.draw(in: textRect, withAttributes: attrs)
+            return true
+        }
+        image.isTemplate = false
+        return image
+    }
+
+    // MARK: - Icon Style: Outline Badge (thin rounded rect stroke)
+
+    private func drawOutlineBadge(text: String) -> NSImage {
         let width: CGFloat = 22
         let height: CGFloat = 16
-        let image = NSImage(size: NSSize(width: width, height: height))
+        let isVietnamese = (text == "V")
 
-        image.lockFocus()
+        let image = NSImage(size: NSSize(width: width, height: height), flipped: false) { _ in
+            let isDark = NSAppearance.current.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            let color: NSColor
+            if isVietnamese {
+                color = isDark
+                    ? NSColor(calibratedRed: 0.40, green: 0.65, blue: 1.0, alpha: 1.0)
+                    : NSColor(calibratedRed: 0.15, green: 0.45, blue: 0.90, alpha: 1.0)
+            } else {
+                color = isDark
+                    ? NSColor(calibratedRed: 0.70, green: 0.70, blue: 0.73, alpha: 1.0)
+                    : NSColor(calibratedRed: 0.50, green: 0.50, blue: 0.53, alpha: 1.0)
+            }
 
-        // Draw rounded rect background (black for template)
-        let rect = NSRect(x: 0, y: 0, width: width, height: height)
-        let path = NSBezierPath(roundedRect: rect, xRadius: 3, yRadius: 3)
-        NSColor.black.setFill()
-        path.fill()
+            let strokeWidth: CGFloat = 1.5
+            let inset = strokeWidth / 2
+            let rect = NSRect(x: inset, y: inset, width: width - strokeWidth, height: height - strokeWidth)
+            let path = NSBezierPath(roundedRect: rect, xRadius: 3, yRadius: 3)
+            path.lineWidth = strokeWidth
+            color.setStroke()
+            path.stroke()
 
-        // Cut out text as transparent
-        let font = NSFont.systemFont(ofSize: 13, weight: .bold)
-        let attrs: [NSAttributedString.Key: Any] = [
-            .font: font,
-            .foregroundColor: NSColor.black
-        ]
-        let textSize = text.size(withAttributes: attrs)
-        let textRect = NSRect(
-            x: (width - textSize.width) / 2,
-            y: (height - textSize.height) / 2,
-            width: textSize.width,
-            height: textSize.height
-        )
-        NSGraphicsContext.current?.compositingOperation = .destinationOut
-        text.draw(in: textRect, withAttributes: attrs)
+            let font = NSFont.systemFont(ofSize: 11, weight: .heavy)
+            let attrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: color]
+            let textSize = text.size(withAttributes: attrs)
+            let textRect = NSRect(
+                x: (width - textSize.width) / 2,
+                y: (height - textSize.height) / 2,
+                width: textSize.width, height: textSize.height
+            )
+            text.draw(in: textRect, withAttributes: attrs)
+            return true
+        }
+        image.isTemplate = false
+        return image
+    }
 
-        image.unlockFocus()
+    // MARK: - Icon Style: Dot Accent (bold letter + small colored dot below)
 
-        // Template image: macOS auto-adjusts color for light/dark menu bar
-        image.isTemplate = true
+    private func drawDotAccent(text: String) -> NSImage {
+        let width: CGFloat = 18
+        let height: CGFloat = 20
+        let isVietnamese = (text == "V")
+
+        let image = NSImage(size: NSSize(width: width, height: height), flipped: false) { _ in
+            let isDark = NSAppearance.current.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            let textColor: NSColor = isDark ? .white : .black
+
+            // Draw text
+            let font = NSFont.systemFont(ofSize: 13, weight: .bold)
+            let attrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: textColor]
+            let textSize = text.size(withAttributes: attrs)
+            let textRect = NSRect(
+                x: (width - textSize.width) / 2,
+                y: 5,
+                width: textSize.width, height: textSize.height
+            )
+            text.draw(in: textRect, withAttributes: attrs)
+
+            // Draw dot
+            let dotColor: NSColor = isVietnamese
+                ? NSColor(calibratedRed: 0.20, green: 0.78, blue: 0.35, alpha: 1.0)  // Green
+                : NSColor(calibratedRed: 0.90, green: 0.30, blue: 0.25, alpha: 1.0)  // Red
+            let dotSize: CGFloat = 4.5
+            let dotRect = NSRect(
+                x: (width - dotSize) / 2,
+                y: 1,
+                width: dotSize, height: dotSize
+            )
+            dotColor.setFill()
+            NSBezierPath(ovalIn: dotRect).fill()
+            return true
+        }
+        image.isTemplate = false
+        return image
+    }
+
+    // MARK: - Icon Style: Underline (bold letter + thick colored underline)
+
+    private func drawUnderline(text: String) -> NSImage {
+        let width: CGFloat = 18
+        let height: CGFloat = 18
+        let isVietnamese = (text == "V")
+
+        let image = NSImage(size: NSSize(width: width, height: height), flipped: false) { _ in
+            let isDark = NSAppearance.current.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            let textColor: NSColor = isDark ? .white : .black
+
+            // Draw text
+            let font = NSFont.systemFont(ofSize: 13, weight: .bold)
+            let attrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: textColor]
+            let textSize = text.size(withAttributes: attrs)
+            let textRect = NSRect(
+                x: (width - textSize.width) / 2,
+                y: 4,
+                width: textSize.width, height: textSize.height
+            )
+            text.draw(in: textRect, withAttributes: attrs)
+
+            // Draw underline
+            let lineColor: NSColor = isVietnamese
+                ? NSColor(calibratedRed: 0.0, green: 0.70, blue: 0.68, alpha: 1.0)   // Teal
+                : (isDark
+                    ? NSColor(calibratedRed: 0.55, green: 0.55, blue: 0.58, alpha: 0.6)
+                    : NSColor(calibratedRed: 0.45, green: 0.45, blue: 0.48, alpha: 0.5))
+            let lineWidth: CGFloat = isVietnamese ? 2.5 : 1.5
+            let lineRect = NSRect(
+                x: (width - 14) / 2,
+                y: 1,
+                width: 14, height: lineWidth
+            )
+            let linePath = NSBezierPath(roundedRect: lineRect, xRadius: 1, yRadius: 1)
+            lineColor.setFill()
+            linePath.fill()
+            return true
+        }
+        image.isTemplate = false
         return image
     }
 
     // MARK: - Event Handlers
 
+    /// Left-click on status bar icon: toggle Vietnamese/English AND show menu
+    /// Right-click (or control-click): show menu only (no toggle)
+    @objc private func handleStatusBarClick(_ sender: NSStatusBarButton) {
+        guard let event = NSApp.currentEvent else { return }
+
+        if event.type == .rightMouseUp || event.modifierFlags.contains(.control) {
+            // Right-click or Ctrl+click: show menu only
+            showStatusMenu()
+        } else {
+            // Left-click: toggle language first, then show menu
+            appState.toggle()
+            showStatusMenu()
+        }
+    }
+
+    private func showStatusMenu() {
+        guard let menu = _menu else { return }
+        updateMenu()
+        statusItem.menu = menu
+        statusItem.button?.performClick(nil)
+        // Reset menu to nil after dismissal so click handling stays manual
+        DispatchQueue.main.async { [weak self] in
+            self?.statusItem.menu = nil
+        }
+    }
+
     @objc private func handleToggleVietnamese() {
         appState.toggle()
-        SoundManager.shared.playToggleSound(enabled: appState.isEnabled)
     }
 
     @objc private func handleInputSourceChanged() {
@@ -293,6 +463,16 @@ class MenuBarController: NSObject, NSWindowDelegate {
 
     @objc private func handleShortcutChanged() {
         updateMenu()
+    }
+
+    @objc private func handleIconStyleChanged() {
+        updateStatusButton()
+    }
+
+    @objc private func handleAppearanceChanged() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            self?.updateStatusButton()
+        }
     }
 
     @objc private func onboardingDidComplete() {
@@ -331,18 +511,11 @@ class MenuBarController: NSObject, NSWindowDelegate {
             controller.view.wantsLayer = true
             controller.view.layer?.backgroundColor = .clear
             let window = NSWindow(contentViewController: controller)
-            window.title = "\(AppMetadata.name) - Cài đặt"
-            window.styleMask = NSWindow.StyleMask([.titled, .closable, .miniaturizable, .fullSizeContentView])
-            window.standardWindowButton(.zoomButton)?.isHidden = true
-            window.setContentSize(NSSize(width: 700, height: 480))
+            window.title = "\(AppMetadata.name)"
+            window.styleMask = [.titled, .closable, .miniaturizable]
+            window.setContentSize(NSSize(width: 500, height: 400))
             window.center()
             window.isReleasedWhenClosed = false
-            window.titlebarAppearsTransparent = true
-            window.titleVisibility = .hidden
-            window.backgroundColor = .clear
-            window.isOpaque = false
-            window.hasShadow = true
-            window.isMovableByWindowBackground = true
             window.delegate = self
             settingsWindow = window
         }

@@ -1,4 +1,4 @@
-//! Gõ Nhanh Vietnamese IME Core
+//! VKey Vietnamese IME Core
 //!
 //! Simple Vietnamese input method engine supporting Telex and VNI.
 //!
@@ -23,7 +23,7 @@
 pub mod data;
 pub mod engine;
 pub mod input;
-pub mod updater;
+
 pub mod utils;
 
 use engine::{Engine, Result};
@@ -205,34 +205,6 @@ pub extern "C" fn ime_modern(modern: bool) {
     }
 }
 
-/// Enable/disable English auto-restore (experimental feature).
-///
-/// When `enabled` is true, automatically restores English words that were
-/// accidentally transformed (e.g., "tẽt" → "text", "ễpct" → "expect").
-/// When `enabled` is false (default), no auto-restore happens.
-/// No-op if engine not initialized.
-#[no_mangle]
-pub extern "C" fn ime_english_auto_restore(enabled: bool) {
-    let mut guard = lock_engine();
-    if let Some(ref mut e) = *guard {
-        e.set_english_auto_restore(enabled);
-    }
-}
-
-/// Enable/disable auto-capitalize after sentence-ending punctuation.
-///
-/// When `enabled` is true, automatically capitalizes the first letter
-/// after sentence-ending punctuation (. ! ? Enter).
-/// When `enabled` is false (default), no auto-capitalize happens.
-/// No-op if engine not initialized.
-#[no_mangle]
-pub extern "C" fn ime_auto_capitalize(enabled: bool) {
-    let mut guard = lock_engine();
-    if let Some(ref mut e) = *guard {
-        e.set_auto_capitalize(enabled);
-    }
-}
-
 /// Clear the input buffer.
 ///
 /// Call on word boundaries (space, punctuation).
@@ -385,6 +357,120 @@ pub extern "C" fn ime_clear_shortcuts() {
 // ============================================================
 // Word Restore FFI
 // ============================================================
+
+/// Set a custom mark key for a given input method.
+///
+/// # Arguments
+/// * `method` - 0 for Telex, 1 for VNI
+/// * `mark_id` - 1=sắc, 2=huyền, 3=hỏi, 4=ngã, 5=nặng
+/// * `keycode` - macOS virtual keycode for the new key
+///
+/// Creates a custom method from defaults if none exists.
+/// No-op if mark_id is out of range (1-5).
+#[no_mangle]
+pub extern "C" fn ime_set_custom_mark(method: u8, mark_id: u8, keycode: u16) {
+    input::with_custom_method(method, |custom| {
+        custom.set_mark_key(mark_id, keycode);
+    });
+}
+
+/// Set a custom stroke key for a given input method.
+///
+/// # Arguments
+/// * `method` - 0 for Telex, 1 for VNI
+/// * `keycode` - macOS virtual keycode for the new stroke key (replaces d/9)
+#[no_mangle]
+pub extern "C" fn ime_set_custom_stroke(method: u8, keycode: u16) {
+    input::with_custom_method(method, |custom| {
+        custom.set_stroke_key(keycode);
+    });
+}
+
+/// Set a custom remove key for a given input method.
+///
+/// # Arguments
+/// * `method` - 0 for Telex, 1 for VNI
+/// * `keycode` - macOS virtual keycode for the new remove key (replaces z/0)
+#[no_mangle]
+pub extern "C" fn ime_set_custom_remove(method: u8, keycode: u16) {
+    input::with_custom_method(method, |custom| {
+        custom.set_remove_key(keycode);
+    });
+}
+
+/// Set a custom tone key for a given input method.
+///
+/// Tone keys create double-key characters (â, ê, ô, ơ, ư, ă).
+///
+/// # Arguments
+/// * `method` - 0 for Telex, 1 for VNI
+/// * `slot` - Tone entry slot (0-3)
+/// * `keycode` - macOS virtual keycode for the new tone key
+/// * `tone_type` - 0=Circumflex (â/ê/ô), 1=Horn (ơ/ư), 2=Breve (ă)
+/// * `target_set` - Which vowels this tone applies to:
+///   0=A, 1=E, 2=O, 3=HORN_TELEX, 4=CIRCUMFLEX, 5=HORN_VNI, 6=BREVE
+#[no_mangle]
+pub extern "C" fn ime_set_custom_tone(
+    method: u8,
+    slot: u8,
+    keycode: u16,
+    tone_type: u8,
+    target_set: u8,
+) {
+    input::with_custom_method(method, |custom| {
+        custom.set_tone_key(slot as usize, keycode, tone_type, target_set);
+    });
+}
+
+/// Reset custom key mappings to defaults for a given input method.
+///
+/// # Arguments
+/// * `method` - 0 for Telex, 1 for VNI
+///
+/// After reset, the engine uses the standard Telex/VNI key mappings.
+#[no_mangle]
+pub extern "C" fn ime_reset_custom(method: u8) {
+    input::reset_custom_method(method);
+}
+
+/// Set a Shift+Key → Character mapping.
+///
+/// # Arguments
+/// * `method` - 0 for Telex, 1 for VNI
+/// * `keycode` - macOS virtual keycode for the base key (e.g., keys::A = 0)
+/// * `output_char` - Unicode codepoint for the output character (e.g., 'Ă' = 0x0102)
+///
+/// Creates a custom method from defaults if none exists.
+/// Max 32 mappings per method. Silently ignored if full.
+#[no_mangle]
+pub extern "C" fn ime_set_shift_key(method: u8, keycode: u16, output_char: u32) {
+    input::with_custom_method(method, |custom| {
+        custom.set_shift_key(keycode, output_char);
+    });
+}
+
+/// Remove a Shift+Key mapping.
+///
+/// # Arguments
+/// * `method` - 0 for Telex, 1 for VNI
+/// * `keycode` - macOS virtual keycode for the key to remove
+#[no_mangle]
+pub extern "C" fn ime_remove_shift_key(method: u8, keycode: u16) {
+    input::with_custom_method(method, |custom| {
+        custom.remove_shift_key(keycode);
+    });
+}
+
+/// Clear all Shift+Key mappings.
+///
+/// # Arguments
+/// * `method` - 0 for Telex, 1 for VNI
+#[no_mangle]
+pub extern "C" fn ime_clear_shift_keys(method: u8) {
+    input::with_custom_method(method, |custom| {
+        custom.clear_shift_keys();
+    });
+}
 
 /// Restore buffer from a Vietnamese word string.
 ///
@@ -727,6 +813,96 @@ mod tests {
         assert!(!r.is_null());
         unsafe { ime_free(r) };
 
+        ime_clear();
+    }
+
+    #[test]
+    #[serial]
+    fn test_key_mapping_us_standard() {
+        ime_init();
+
+        // Test Shift+Equal -> + (US standard layout)
+        let r1 = ime_key_ext(keys::EQUAL, false, false, true);
+        assert!(!r1.is_null());
+        unsafe {
+            let res = &*r1;
+            assert_eq!(res.action, 1, "Shift+Equal should produce action");
+            if res.count > 0 {
+                let ch = char::from_u32(res.chars[0]).unwrap();
+                assert_eq!(ch, '+', "Shift+Equal should produce '+' but got '{}'", ch);
+            } else {
+                panic!("Shift+Equal produced no characters");
+            }
+            ime_free(r1);
+        }
+
+        // Test Shift+Backslash -> | (US standard layout)
+        let r2 = ime_key_ext(keys::BACKSLASH, false, false, true);
+        assert!(!r2.is_null());
+        unsafe {
+            let res = &*r2;
+            assert_eq!(res.action, 1, "Shift+Backslash should produce action");
+            if res.count > 0 {
+                let ch = char::from_u32(res.chars[0]).unwrap();
+                assert_eq!(
+                    ch, '|',
+                    "Shift+Backslash should produce '|' but got '{}'",
+                    ch
+                );
+            } else {
+                panic!("Shift+Backslash produced no characters");
+            }
+            ime_free(r2);
+        }
+
+        ime_clear();
+    }
+
+    #[test]
+    #[serial]
+    fn test_ffi_shift_key() {
+        ime_init();
+        ime_method(0); // Telex
+        ime_clear();
+
+        // Set Shift+A → Ă (U+0102)
+        ime_set_shift_key(0, keys::A, 0x0102);
+
+        // Type Shift+A: should output Ă
+        let r = ime_key_ext(keys::A, false, false, true);
+        assert!(!r.is_null());
+        unsafe {
+            let res = &*r;
+            assert_eq!(res.action, 1, "Shift+A should produce action");
+            assert_eq!(
+                res.backspace, 0,
+                "Shift+Key consumed event, no backspace needed"
+            );
+            assert!(res.count > 0, "Should have output chars");
+            let ch = char::from_u32(res.chars[0]).unwrap();
+            assert_eq!(ch, 'Ă', "Shift+A should produce 'Ă' but got '{}'", ch);
+            ime_free(r);
+        }
+
+        ime_clear();
+
+        // Type 'a' normally (no shift): should NOT produce Ă
+        let r2 = ime_key(keys::A, false, false);
+        assert!(!r2.is_null());
+        unsafe {
+            let res = &*r2;
+            // Normal 'a' just goes into buffer, action may or may not be Send
+            // but if it is, it should NOT be Ă
+            if res.count > 0 {
+                let ch = char::from_u32(res.chars[0]).unwrap();
+                assert_ne!(ch, 'Ă', "Normal 'a' should NOT produce 'Ă'");
+            }
+            ime_free(r2);
+        }
+
+        // Clean up
+        ime_clear_shift_keys(0);
+        ime_reset_custom(0);
         ime_clear();
     }
 }

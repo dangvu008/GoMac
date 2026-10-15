@@ -11,9 +11,9 @@
 //!
 //! Run with: cargo test --test typing_order_permutation_test -- --nocapture
 
-use gonhanh_core::engine::Engine;
-use gonhanh_core::utils::type_word;
 use std::collections::HashSet;
+use vkey_core::engine::Engine;
+use vkey_core::utils::type_word;
 
 // =============================================================================
 // VIETNAMESE CHARACTER DECOMPOSITION
@@ -429,9 +429,7 @@ fn test_word_all_variants(
         let input = format!("{} ", variant);
         let mut e = Engine::new();
         e.set_method(0); // Telex
-        if use_auto_restore {
-            e.set_english_auto_restore(true);
-        }
+        if use_auto_restore {}
         let result = type_word(&mut e, &input);
         let result_trimmed = result.trim();
 
@@ -573,7 +571,6 @@ fn diphthong_tone_positions() {
         for variant in variants {
             let input = format!("{} ", variant);
             let mut e = Engine::new();
-            e.set_english_auto_restore(true);
             let result = type_word(&mut e, &input);
 
             if result.trim() != *expected {

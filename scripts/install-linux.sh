@@ -1,8 +1,8 @@
 #!/bin/bash
-# Gõ Nhanh Linux Installer
-# curl -fsSL https://raw.githubusercontent.com/khaphanspace/gonhanh.org/main/scripts/install-linux.sh | bash
+# VKey Linux Installer
+# curl -fsSL https://raw.githubusercontent.com/khaphanspace/vkey.org/main/scripts/install-linux.sh | bash
 
-REPO="khaphanspace/gonhanh.org"
+REPO="khaphanspace/vkey.org"
 TMP=$(mktemp -d)
 VERSION=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" 2>/dev/null | grep '"tag_name"' | sed -E 's/.*"v?([^"]+)".*/\1/' || echo "1.0.0")
 trap "rm -rf $TMP" EXIT
@@ -22,7 +22,7 @@ log_error() { echo -e "${RED}[✗]${NC} $1"; }
 header() {
     echo ""
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${GREEN}  Gõ Nhanh v${VERSION} - Linux Installer${NC}"
+    echo -e "${GREEN}  VKey v${VERSION} - Linux Installer${NC}"
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
 }
@@ -49,12 +49,12 @@ install_fcitx5() {
     log_ok "Fcitx5 đã cài đặt"
 }
 
-# Download and install GoNhanh addon
+# Download and install VKey addon
 install_addon() {
-    log_info "Tải Gõ Nhanh addon..."
+    log_info "Tải VKey addon..."
     cd "$TMP"
-    if curl -fsSL "https://github.com/$REPO/releases/latest/download/gonhanh-linux.tar.gz" | tar xz; then
-        cd gonhanh-linux && ./install.sh
+    if curl -fsSL "https://github.com/$REPO/releases/latest/download/vkey-linux.tar.gz" | tar xz; then
+        cd vkey-linux && ./install.sh
         log_ok "Addon đã cài đặt"
     else
         log_error "Không thể tải addon"
@@ -65,13 +65,13 @@ install_addon() {
 # Install CLI tool
 install_cli() {
     log_info "Cài đặt CLI..."
-    mkdir -p ~/.local/bin ~/.local/share/gonhanh
-    if ! curl -fsSL "https://raw.githubusercontent.com/$REPO/main/platforms/linux/scripts/gonhanh-cli.sh" -o ~/.local/bin/gn; then
+    mkdir -p ~/.local/bin ~/.local/share/vkey
+    if ! curl -fsSL "https://raw.githubusercontent.com/$REPO/main/platforms/linux/scripts/vkey-cli.sh" -o ~/.local/bin/gn; then
         log_error "Không thể tải CLI"
         exit 1
     fi
     chmod +x ~/.local/bin/gn
-    echo "$VERSION" > ~/.local/share/gonhanh/version
+    echo "$VERSION" > ~/.local/share/vkey/version
 
     # Ensure ~/.local/bin is in PATH
     if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
@@ -91,7 +91,7 @@ install_cli() {
 setup_environment() {
     log_info "Cấu hình môi trường..."
 
-    ENV_BLOCK='# Gõ Nhanh
+    ENV_BLOCK='# VKey
 export GTK_IM_MODULE=fcitx
 export QT_IM_MODULE=fcitx
 export XMODIFIERS=@im=fcitx
@@ -111,7 +111,7 @@ export LD_LIBRARY_PATH="$HOME/.local/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"'
     log_ok "Môi trường đã cấu hình"
 }
 
-# Configure Fcitx5 to use GoNhanh
+# Configure Fcitx5 to use VKey
 configure_fcitx5() {
     log_info "Cấu hình Fcitx5..."
 
@@ -119,7 +119,7 @@ configure_fcitx5() {
     PROFILE="$FCITX5_DIR/profile"
     mkdir -p "$FCITX5_DIR"
 
-    if [[ -f "$PROFILE" ]] && grep -q "gonhanh" "$PROFILE" 2>/dev/null; then
+    if [[ -f "$PROFILE" ]] && grep -q "vkey" "$PROFILE" 2>/dev/null; then
         log_ok "Fcitx5 đã được cấu hình"
         return 0
     fi
@@ -129,14 +129,14 @@ configure_fcitx5() {
 [Groups/0]
 Name=Default
 Default Layout=us
-DefaultIM=gonhanh
+DefaultIM=vkey
 
 [Groups/0/Items/0]
 Name=keyboard-us
 Layout=
 
 [Groups/0/Items/1]
-Name=gonhanh
+Name=vkey
 Layout=
 
 [GroupOrder]

@@ -1,27 +1,27 @@
-# Gõ Nhanh trên macOS
+# VKey trên macOS
 
 ## Cài đặt
 
 ### Cách 1: Homebrew (Khuyến nghị)
 
 ```bash
-brew install --cask gonhanh
+brew install --cask vkey
 ```
 
-Sau đó cấp quyền: System Settings → Privacy & Security → Accessibility → Bật **Gõ Nhanh**
+Sau đó cấp quyền: System Settings → Privacy & Security → Accessibility → Bật **VKey**
 
 ### Cách 2: Tải thủ công
 
-1. **Tải về:** [GoNhanh.dmg](https://github.com/khaphanspace/gonhanh.org/releases/latest/download/GoNhanh.dmg)
+1. **Tải về:** [VKey.dmg](https://github.com/khaphanspace/vkey.org/releases/latest/download/VKey.dmg)
 
 2. **Cài đặt:** Mở file `.dmg` → Kéo vào **Applications**
 
 3. **Cho phép chạy:** (Lưu ý phải tắt app trước khi chạy)
    ```bash
-   xattr -cr /Applications/GoNhanh.app
+   xattr -cr /Applications/VKey.app
    ```
 
-4. **Cấp quyền:** Mở app → System Settings → Privacy & Security → Accessibility → Bật **GoNhanh**
+4. **Cấp quyền:** Mở app → System Settings → Privacy & Security → Accessibility → Bật **VKey**
 
 ---
 
@@ -60,7 +60,7 @@ Menu Bar → Cài đặt → Kiểu gõ → **VNI**
 
 **Homebrew:**
 ```bash
-brew upgrade --cask gonhanh
+brew upgrade --cask vkey
 ```
 
 **Thủ công:** Menu Bar → Cài đặt → Cập nhật → **Tải và cài đặt**
@@ -71,7 +71,7 @@ brew upgrade --cask gonhanh
 
 **Homebrew:**
 ```bash
-brew uninstall --cask gonhanh
+brew uninstall --cask vkey
 ```
 
 **Thủ công:**
@@ -79,7 +79,7 @@ brew uninstall --cask gonhanh
 2. Xóa app từ Applications
 3. (Tùy chọn) Xóa cấu hình:
    ```bash
-   rm -rf ~/.config/gonhanh ~/Library/Preferences/org.gonhanh.*
+   rm -rf ~/.config/vkey ~/Library/Preferences/org.vkey.*
    ```
 
 ---
@@ -88,7 +88,7 @@ brew uninstall --cask gonhanh
 
 **App không mở được?**
 ```bash
-xattr -cr /Applications/GoNhanh.app
+xattr -cr /Applications/VKey.app
 ```
 
 **Không gõ được tiếng Việt?**
@@ -98,7 +98,7 @@ xattr -cr /Applications/GoNhanh.app
 
 **Sau khi cập nhật macOS:**
 
-System Settings → Privacy & Security → Accessibility → Tắt/bật lại GoNhanh
+System Settings → Privacy & Security → Accessibility → Tắt/bật lại VKey
 
 ---
 
@@ -107,7 +107,7 @@ System Settings → Privacy & Security → Accessibility → Tắt/bật lại G
 <details>
 <summary>Khởi động cùng hệ thống</summary>
 
-System Settings → General → Login Items → Thêm **GoNhanh**
+System Settings → General → Login Items → Thêm **VKey**
 </details>
 
 <details>

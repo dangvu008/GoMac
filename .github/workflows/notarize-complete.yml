@@ -29,7 +29,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: signed-app
-          path: GoNhanh.app
+          path: VKey.app
           run-id: ${{ inputs.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -82,10 +82,10 @@ jobs:
       - name: Staple Notarization Ticket
         run: |
           echo "Stapling notarization ticket..."
-          xcrun stapler staple "GoNhanh.app"
+          xcrun stapler staple "VKey.app"
 
           echo "Verifying..."
-          spctl -a -vvv -t install "GoNhanh.app"
+          spctl -a -vvv -t install "VKey.app"
           echo "✅ Stapling successful!"
 
       - name: Create Notarized DMG
@@ -93,7 +93,7 @@ jobs:
           # Create output directory (script writes to platforms/macos/build/)
           mkdir -p platforms/macos/build
 
-          ./scripts/create-dmg.sh "GoNhanh.app"
+          ./scripts/create-dmg.sh "VKey.app"
           ls -la platforms/macos/build/*.dmg
 
       - name: Update Release Asset
@@ -107,7 +107,7 @@ jobs:
 
           # Delete old DMG asset
           ASSET_ID=$(gh api "repos/${{ github.repository }}/releases/tags/$TAG" \
-            --jq '.assets[] | select(.name == "GoNhanh.dmg") | .id' 2>/dev/null || echo "")
+            --jq '.assets[] | select(.name == "VKey.dmg") | .id' 2>/dev/null || echo "")
 
           if [ -n "$ASSET_ID" ]; then
             echo "Deleting old asset: $ASSET_ID"

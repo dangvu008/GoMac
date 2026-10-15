@@ -1,17 +1,17 @@
 #!/bin/bash
-# CPU Benchmark for GoNhanh
+# CPU Benchmark for VKey
 # Measures CPU usage during idle and typing
 
-echo "=== GoNhanh CPU Benchmark ==="
+echo "=== VKey CPU Benchmark ==="
 echo ""
 
 # Get PID
-PID=$(pgrep -x GoNhanh)
+PID=$(pgrep -x VKey)
 if [ -z "$PID" ]; then
-    echo "Error: GoNhanh not running"
+    echo "Error: VKey not running"
     exit 1
 fi
-echo "GoNhanh PID: $PID"
+echo "VKey PID: $PID"
 
 # Measure idle CPU (5 samples, 1 sec apart)
 echo ""

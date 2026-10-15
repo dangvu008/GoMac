@@ -85,9 +85,9 @@ jobs:
           cargo build --release --target aarch64-apple-darwin
           cargo build --release --target x86_64-apple-darwin
           lipo -create \
-            target/aarch64-apple-darwin/release/libgonhanh_core.a \
-            target/x86_64-apple-darwin/release/libgonhanh_core.a \
-            -output ../platforms/macos/libgonhanh_core.a
+            target/aarch64-apple-darwin/release/libvkey_core.a \
+            target/x86_64-apple-darwin/release/libvkey_core.a \
+            -output ../platforms/macos/libvkey_core.a
 
       - name: Build macOS app
         env:
@@ -99,7 +99,7 @@ jobs:
 
           if [ "$SHOULD_SIGN" = "true" ]; then
             echo "Building with Developer ID signing..."
-            xcodebuild -scheme GoNhanh -configuration Release \
+            xcodebuild -scheme VKey -configuration Release \
               -derivedDataPath build \
               CODE_SIGN_IDENTITY="$CODE_SIGN_IDENTITY" \
               DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
@@ -107,7 +107,7 @@ jobs:
               OTHER_CODE_SIGN_FLAGS="--options=runtime"
           else
             echo "Building with ad-hoc signing..."
-            xcodebuild -scheme GoNhanh -configuration Release \
+            xcodebuild -scheme VKey -configuration Release \
               -derivedDataPath build \
               CODE_SIGN_IDENTITY="-"
           fi
@@ -130,7 +130,7 @@ jobs:
       - name: Set version in app
         run: |
           cd platforms/macos
-          APP="build/Build/Products/Release/GoNhanh.app"
+          APP="build/Build/Products/Release/VKey.app"
           V="${{ steps.version.outputs.version }}"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $V" "$APP/Contents/Info.plist"
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $V" "$APP/Contents/Info.plist"
@@ -144,19 +144,19 @@ jobs:
           CODE_SIGN_IDENTITY: ${{ env.APPLE_SIGNING_IDENTITY || '-' }}
         run: |
           cd platforms/macos
-          APP="build/Build/Products/Release/GoNhanh.app"
+          APP="build/Build/Products/Release/VKey.app"
 
           if [ "$SHOULD_SIGN" = "true" ]; then
             echo "Signing with Developer ID and hardened runtime..."
             codesign --force --deep --sign "$CODE_SIGN_IDENTITY" \
-              --entitlements GoNhanh.entitlements.production \
+              --entitlements VKey.entitlements.production \
               --options runtime \
               --timestamp \
               "$APP"
           else
             echo "Signing with ad-hoc identity..."
             codesign --force --deep --sign - \
-              --entitlements GoNhanh.entitlements \
+              --entitlements VKey.entitlements \
               "$APP"
           fi
 
@@ -168,19 +168,19 @@ jobs:
       - name: Create DMG
         run: |
           cd platforms/macos
-          APP="build/Build/Products/Release/GoNhanh.app"
+          APP="build/Build/Products/Release/VKey.app"
           V="${{ steps.version.outputs.version }}"
 
           # Create DMG (version already set, app already signed)
           ../../scripts/create-dmg.sh "$APP" || {
             # Fallback: simple DMG if script fails
-            hdiutil create -volname "GoNhanh" -srcfolder "$APP" -ov -format UDZO "build/GoNhanh-${V}.dmg"
+            hdiutil create -volname "VKey" -srcfolder "$APP" -ov -format UDZO "build/VKey-${V}.dmg"
           }
 
       - name: Upload DMG artifact
         uses: actions/upload-artifact@v4
         with:
-          name: GoNhanh-${{ steps.version.outputs.version }}-macOS
+          name: VKey-${{ steps.version.outputs.version }}-macOS
           path: platforms/macos/build/*.dmg
           retention-days: 14
 
@@ -205,7 +205,7 @@ jobs:
               '',
               '| Commit | Version | Download |',
               '|--------|---------|----------|',
-              `| \`${shortSha}\` | \`${version}\` | [**GoNhanh-${version}-macOS.zip**](${artifactUrl}#artifacts) |`,
+              `| \`${shortSha}\` | \`${version}\` | [**VKey-${version}-macOS.zip**](${artifactUrl}#artifacts) |`,
               '',
               `> Build for commit ${process.env.COMMIT_SHA}`,
               `> Artifact expires in 14 days`
@@ -278,14 +278,14 @@ jobs:
           V="${{ steps.version.outputs.version }}"
           cd platforms/linux
           mkdir -p dist
-          cp build/src/libgonhanh.so dist/
+          cp build/src/libvkey.so dist/
           cp -r data/* dist/
-          cp ../../core/target/release/libgonhanh_core.so dist/ || true
-          tar -czvf "gonhanh-${V}-linux.tar.gz" -C dist .
+          cp ../../core/target/release/libvkey_core.so dist/ || true
+          tar -czvf "vkey-${V}-linux.tar.gz" -C dist .
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
-          name: GoNhanh-${{ steps.version.outputs.version }}-Linux
+          name: VKey-${{ steps.version.outputs.version }}-Linux
           path: platforms/linux/*.tar.gz
           retention-days: 14

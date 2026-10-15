@@ -1,8 +1,8 @@
-# Gõ Nhanh: Project Overview & Product Development Requirements
+# VKey: Project Overview & Product Development Requirements
 
 ## Project Vision
 
-Gõ Nhanh is a **high-performance Vietnamese input method engine** (IME) for macOS and Windows with a platform-agnostic Rust core. It enables fast, accurate Vietnamese text input with minimal system overhead. The project demonstrates production-grade system software design: Rust core for performance and safety, native UI (SwiftUI on macOS, WPF on Windows), and validation-first transformation pipeline for Vietnamese phonology.
+VKey is a **high-performance Vietnamese input method engine** (IME) for macOS and Windows with a platform-agnostic Rust core. It enables fast, accurate Vietnamese text input with minimal system overhead. The project demonstrates production-grade system software design: Rust core for performance and safety, native UI (SwiftUI on macOS, WPF on Windows), and validation-first transformation pipeline for Vietnamese phonology.
 
 ## Product Goals
 
@@ -213,4 +213,4 @@ Examples:
 **Last Updated**: 2025-12-14
 **Status**: Active Development
 **Platforms**: macOS (v1.0.21+), Windows (production), Linux (beta)
-**Repository**: https://github.com/khaphanspace/gonhanh.org
+**Repository**: https://github.com/khaphanspace/vkey.org

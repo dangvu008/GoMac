@@ -251,12 +251,12 @@ mod test_utils {
                 '(' => (keys::N9, true),
                 ')' => (keys::N0, true),
                 '_' => (keys::MINUS, true),
-                '+' => (keys::EQUAL, true),
+                '+' => (keys::EQUAL, true), // US standard: Shift+=
                 ':' => (keys::SEMICOLON, true),
                 '"' => (keys::QUOTE, true),
                 '>' => (keys::DOT, true),
                 '?' => (keys::SLASH, true),
-                '|' => (keys::BACKSLASH, true),
+                '|' => (keys::BACKSLASH, true), // US standard: Shift+\
                 '{' => (keys::LBRACKET, true),
                 '}' => (keys::RBRACKET, true),
                 '~' => (keys::BACKQUOTE, true),
@@ -354,34 +354,6 @@ mod test_utils {
             let mut e = Engine::new();
             let result = type_word(&mut e, input);
             assert_eq!(result, *expected, "[Telex] '{}' → '{}'", input, result);
-        }
-    }
-
-    /// Run Telex test cases with English auto-restore enabled
-    pub fn telex_auto_restore(cases: &[(&str, &str)]) {
-        for (input, expected) in cases {
-            let mut e = Engine::new();
-            e.set_english_auto_restore(true);
-            let result = type_word(&mut e, input);
-            assert_eq!(
-                result, *expected,
-                "[Telex AutoRestore] '{}' → '{}'",
-                input, result
-            );
-        }
-    }
-
-    /// Run Telex test cases with auto-capitalize enabled
-    pub fn telex_auto_capitalize(cases: &[(&str, &str)]) {
-        for (input, expected) in cases {
-            let mut e = Engine::new();
-            e.set_auto_capitalize(true);
-            let result = type_word(&mut e, input);
-            assert_eq!(
-                result, *expected,
-                "[Telex AutoCapitalize] '{}' → '{}'",
-                input, result
-            );
         }
     }
 

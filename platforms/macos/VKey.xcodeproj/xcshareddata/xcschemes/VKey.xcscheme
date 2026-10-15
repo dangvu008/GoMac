@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "A1000006000000000000001"
-               BuildableName = "GoNhanh.app"
-               BlueprintName = "GoNhanh"
-               ReferencedContainer = "container:GoNhanh.xcodeproj">
+               BuildableName = "VKey.app"
+               BlueprintName = "VKey"
+               ReferencedContainer = "container:VKey.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -35,9 +35,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "B1000006000000000000001"
-               BuildableName = "GoNhanhTests.xctest"
-               BlueprintName = "GoNhanhTests"
-               ReferencedContainer = "container:GoNhanh.xcodeproj">
+               BuildableName = "VKeyTests.xctest"
+               BlueprintName = "VKeyTests"
+               ReferencedContainer = "container:VKey.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -57,9 +57,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A1000006000000000000001"
-            BuildableName = "GoNhanh.app"
-            BlueprintName = "GoNhanh"
-            ReferencedContainer = "container:GoNhanh.xcodeproj">
+            BuildableName = "VKey.app"
+            BlueprintName = "VKey"
+            ReferencedContainer = "container:VKey.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -74,9 +74,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A1000006000000000000001"
-            BuildableName = "GoNhanh.app"
-            BlueprintName = "GoNhanh"
-            ReferencedContainer = "container:GoNhanh.xcodeproj">
+            BuildableName = "VKey.app"
+            BlueprintName = "VKey"
+            ReferencedContainer = "container:VKey.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

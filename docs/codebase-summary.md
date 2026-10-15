@@ -1,11 +1,11 @@
-# Gõ Nhanh: Codebase Summary
+# VKey: Codebase Summary
 
-Complete directory structure, module responsibilities, and development entry points for the Gõ Nhanh Vietnamese Input Method Engine.
+Complete directory structure, module responsibilities, and development entry points for the VKey Vietnamese Input Method Engine.
 
 ## Directory Structure
 
 ```
-gonhanh.org/
+vkey.org/
 ├── core/                          # Rust engine (100% platform-agnostic)
 │   ├── src/
 │   │   ├── lib.rs                # FFI exports (ime_init, ime_key, ime_method, etc.)
@@ -58,8 +58,8 @@ gonhanh.org/
 │   │   ├── UpdateChecker.swift  # GitHub API integration (version checking)
 │   │   ├── AppMetadata.swift    # Shared app constants (version, names)
 │   │   │
-│   │   ├── libgonhanh_core.a    # Compiled universal Rust library (arm64 + x86_64)
-│   │   ├── GoNhanh.xcodeproj/   # Xcode project + build settings
+│   │   ├── libvkey_core.a    # Compiled universal Rust library (arm64 + x86_64)
+│   │   ├── VKey.xcodeproj/   # Xcode project + build settings
 │   │   ├── Assets.xcassets/     # App icons (1024×1024 down to 16×16)
 │   │   ├── dmg-resources/       # DMG installer background + resources
 │   │   └── Tests/               # Swift unit tests (LaunchAtLoginTests.swift)
@@ -79,7 +79,7 @@ gonhanh.org/
 │   │   │   ├── OnboardingWindow.xaml.cs # Setup wizard
 │   │   │   ├── AboutWindow.xaml.cs      # About dialog
 │   │   │   └── SettingsWindow.xaml.cs   # Preferences window
-│   │   └── libgonhanh_core.dll  # Compiled Rust DLL
+│   │   └── libvkey_core.dll  # Compiled Rust DLL
 │   │
 │   └── linux/                   # Beta: Fcitx5 addon (~500 LOC)
 │       ├── src/
@@ -87,12 +87,12 @@ gonhanh.org/
 │       │   ├── RustBridge.h/cpp  # C++ FFI wrapper to Rust core
 │       │   └── KeycodeMap.h      # X11/Wayland keysym → keycode mapping
 │       ├── data/
-│       │   ├── gonhanh-addon.conf # Fcitx5 addon registration
-│       │   └── gonhanh.conf      # Input method configuration
+│       │   ├── vkey-addon.conf # Fcitx5 addon registration
+│       │   └── vkey.conf      # Input method configuration
 │       ├── scripts/
 │       │   ├── build.sh          # CMake build script
 │       │   └── install.sh        # User-local installation script
-│       └── libgonhanh_core.so    # Compiled Rust shared library (x86_64)
+│       └── libvkey_core.so    # Compiled Rust shared library (x86_64)
 │
 ├── scripts/                     # Build automation
 │   ├── setup.sh                # Environment setup (installs Rust, arms cargo-nextest)
@@ -398,7 +398,7 @@ RustBridge.swift (macOS)
   └─→ CGEventTap keyboard hook
 
 RustBridge.cs (Windows)
-  ├─→ libgonhanh_core.dll exports
+  ├─→ libvkey_core.dll exports
   └─→ SetWindowsHookEx keyboard hook
 ```
 

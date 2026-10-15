@@ -19,7 +19,7 @@ mkdir -p build/Release
 # Compile Swift files
 echo "Compiling Swift sources..."
 swiftc \
-    -o build/Release/GoNhanh \
+    -o build/Release/VKey \
     -sdk $(xcrun --show-sdk-path) \
     -target arm64-apple-macos13.0 \
     -F /System/Library/Frameworks \
@@ -27,11 +27,11 @@ swiftc \
     -framework AppKit \
     -framework SwiftUI \
     -L . \
-    -lgonhanh_core \
+    -lvkey_core \
     -Xlinker -rpath -Xlinker @executable_path \
     App.swift MenuBar.swift SettingsView.swift RustBridge.swift
 
 echo "✅ macOS app built successfully!"
-echo "📦 Binary: platforms/macos/build/Release/GoNhanh"
+echo "📦 Binary: platforms/macos/build/Release/VKey"
 echo ""
 echo "To create .app bundle, run: make bundle"

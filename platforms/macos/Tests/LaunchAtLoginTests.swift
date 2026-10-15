@@ -1,5 +1,5 @@
 import XCTest
-@testable import GoNhanh
+@testable import VKey
 
 // MARK: - Launch at Login Tests
 

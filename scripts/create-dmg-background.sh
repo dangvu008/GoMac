@@ -1,5 +1,5 @@
 #!/bin/bash
-# Create simple DMG background image for GoNhanh installer
+# Create simple DMG background image for VKey installer
 # Clean, minimal design with dashed border for drop zone
 
 set -e

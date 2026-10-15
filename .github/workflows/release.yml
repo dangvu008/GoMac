@@ -71,9 +71,9 @@ jobs:
           cargo build --release --target aarch64-apple-darwin
           cargo build --release --target x86_64-apple-darwin
           lipo -create \
-            target/aarch64-apple-darwin/release/libgonhanh_core.a \
-            target/x86_64-apple-darwin/release/libgonhanh_core.a \
-            -output ../platforms/macos/libgonhanh_core.a
+            target/aarch64-apple-darwin/release/libvkey_core.a \
+            target/x86_64-apple-darwin/release/libvkey_core.a \
+            -output ../platforms/macos/libvkey_core.a
 
       - name: Build macOS App
         env:
@@ -84,7 +84,7 @@ jobs:
 
           if [ -n "$APPLE_SIGNING_IDENTITY" ]; then
             echo "Building with Developer ID signing..."
-            xcodebuild -scheme GoNhanh -configuration Release \
+            xcodebuild -scheme VKey -configuration Release \
               -derivedDataPath build \
               CODE_SIGN_IDENTITY="$CODE_SIGN_IDENTITY" \
               DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
@@ -92,7 +92,7 @@ jobs:
               OTHER_CODE_SIGN_FLAGS="--options=runtime"
           else
             echo "Building with ad-hoc signing (no Apple Developer secrets configured)..."
-            xcodebuild -scheme GoNhanh -configuration Release \
+            xcodebuild -scheme VKey -configuration Release \
               -derivedDataPath build \
               CODE_SIGN_IDENTITY="-"
           fi
@@ -104,7 +104,7 @@ jobs:
         run: |
           cd platforms/macos
           V="${GITHUB_REF_NAME#v}"
-          APP="build/Build/Products/Release/GoNhanh.app"
+          APP="build/Build/Products/Release/VKey.app"
 
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $V" "$APP/Contents/Info.plist"
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $V" "$APP/Contents/Info.plist"
@@ -118,19 +118,19 @@ jobs:
           CODE_SIGN_IDENTITY: ${{ env.APPLE_SIGNING_IDENTITY || '-' }}
         run: |
           cd platforms/macos
-          APP="build/Build/Products/Release/GoNhanh.app"
+          APP="build/Build/Products/Release/VKey.app"
 
           if [ -n "$APPLE_SIGNING_IDENTITY" ]; then
             echo "Signing with Developer ID and hardened runtime..."
             codesign --force --deep --sign "$CODE_SIGN_IDENTITY" \
-              --entitlements GoNhanh.entitlements.production \
+              --entitlements VKey.entitlements.production \
               --options runtime \
               --timestamp \
               "$APP"
           else
             echo "Signing with ad-hoc identity..."
             codesign --force --deep --sign - \
-              --entitlements GoNhanh.entitlements \
+              --entitlements VKey.entitlements \
               "$APP"
           fi
 
@@ -148,13 +148,13 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           cd platforms/macos
-          APP="build/Build/Products/Release/GoNhanh.app"
+          APP="build/Build/Products/Release/VKey.app"
 
           echo "Creating ZIP for notarization..."
-          ditto -c -k --keepParent "$APP" "GoNhanh-notarize.zip"
+          ditto -c -k --keepParent "$APP" "VKey-notarize.zip"
 
           echo "Submitting to Apple for notarization..."
-          xcrun notarytool submit "GoNhanh-notarize.zip" \
+          xcrun notarytool submit "VKey-notarize.zip" \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_APP_PASSWORD" \
             --team-id "$APPLE_TEAM_ID" \
@@ -206,7 +206,7 @@ jobs:
             echo "::warning::Notarization not completed within 30 min. Releasing unstapled DMG. Background job will update later."
           fi
 
-          rm -f "GoNhanh-notarize.zip"
+          rm -f "VKey-notarize.zip"
 
       - name: Upload Notarization Info
         if: ${{ env.APPLE_SIGNING_IDENTITY != '' && steps.notarize.outputs.stapled == 'false' }}
@@ -221,7 +221,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: signed-app
-          path: platforms/macos/build/Build/Products/Release/GoNhanh.app
+          path: platforms/macos/build/Build/Products/Release/VKey.app
           retention-days: 30
 
       # ============================================================
@@ -230,7 +230,7 @@ jobs:
       - name: Create DMG
         run: |
           cd platforms/macos
-          APP="build/Build/Products/Release/GoNhanh.app"
+          APP="build/Build/Products/Release/VKey.app"
           ../../scripts/create-dmg.sh "$APP"
 
       - name: Get Tag Message
@@ -283,7 +283,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: signed-app
-          path: GoNhanh.app
+          path: VKey.app
 
       - name: Wait for Notarization & Staple
         env:
@@ -313,7 +313,7 @@ jobs:
             case "$STATUS" in
               "Accepted")
                 echo "✅ Notarization accepted!"
-                xcrun stapler staple "GoNhanh.app"
+                xcrun stapler staple "VKey.app"
                 echo "stapled=true" >> $GITHUB_ENV
                 exit 0
                 ;;
@@ -334,7 +334,7 @@ jobs:
         if: ${{ env.stapled == 'true' }}
         run: |
           mkdir -p platforms/macos/build
-          ./scripts/create-dmg.sh "GoNhanh.app"
+          ./scripts/create-dmg.sh "VKey.app"
 
       - name: Update Release with Stapled DMG
         if: ${{ env.stapled == 'true' }}
@@ -346,7 +346,7 @@ jobs:
 
           # Delete old asset and upload new one
           ASSET_ID=$(gh api "repos/${{ github.repository }}/releases/tags/$TAG" \
-            --jq '.assets[] | select(.name == "GoNhanh.dmg") | .id' 2>/dev/null || echo "")
+            --jq '.assets[] | select(.name == "VKey.dmg") | .id' 2>/dev/null || echo "")
 
           if [ -n "$ASSET_ID" ]; then
             gh api -X DELETE "repos/${{ github.repository }}/releases/assets/$ASSET_ID"
@@ -393,13 +393,13 @@ jobs:
 
       - name: Package
         run: |
-          PKG="gonhanh-linux"
+          PKG="vkey-linux"
           mkdir -p "$PKG/lib" "$PKG/share/fcitx5/addon" "$PKG/share/fcitx5/inputmethod"
 
-          cp platforms/linux/build/gonhanh.so "$PKG/lib/"
-          cp core/target/release/libgonhanh_core.so "$PKG/lib/"
-          cp platforms/linux/data/gonhanh-addon.conf "$PKG/share/fcitx5/addon/gonhanh.conf"
-          cp platforms/linux/data/gonhanh.conf "$PKG/share/fcitx5/inputmethod/"
+          cp platforms/linux/build/vkey.so "$PKG/lib/"
+          cp core/target/release/libvkey_core.so "$PKG/lib/"
+          cp platforms/linux/data/vkey-addon.conf "$PKG/share/fcitx5/addon/vkey.conf"
+          cp platforms/linux/data/vkey.conf "$PKG/share/fcitx5/inputmethod/"
           cp platforms/linux/README.md "$PKG/"
           cp platforms/linux/scripts/install.sh "$PKG/"
           chmod +x "$PKG/install.sh"
@@ -417,7 +417,7 @@ jobs:
         with:
           files: "*.tar.gz"
 
-  # DEPRECATED: Gõ Nhanh now on official Homebrew (https://formulae.brew.sh/cask/gonhanh)
+  # DEPRECATED: VKey now on official Homebrew (https://formulae.brew.sh/cask/vkey)
   # Homebrew autobump bot handles updates via livecheck. Keep for reference only.
   update-homebrew:
     if: false
@@ -428,8 +428,8 @@ jobs:
         id: sha
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          curl -L -o GoNhanh.dmg "https://github.com/khaphanspace/gonhanh.org/releases/download/${{ github.ref_name }}/GoNhanh.dmg"
-          SHA256=$(shasum -a 256 GoNhanh.dmg | awk '{print $1}')
+          curl -L -o VKey.dmg "https://github.com/khaphanspace/vkey.org/releases/download/${{ github.ref_name }}/VKey.dmg"
+          SHA256=$(shasum -a 256 VKey.dmg | awk '{print $1}')
           echo "sha256=$SHA256" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
@@ -439,18 +439,18 @@ jobs:
           VERSION: ${{ steps.sha.outputs.version }}
           SHA256: ${{ steps.sha.outputs.sha256 }}
         run: |
-          git clone https://x-access-token:${GH_TOKEN}@github.com/khaphanspace/homebrew-gonhanh.git
-          cd homebrew-gonhanh
+          git clone https://x-access-token:${GH_TOKEN}@github.com/khaphanspace/homebrew-vkey.git
+          cd homebrew-vkey
 
-          cat > Casks/gonhanh.rb << 'EOF'
-          cask "gonhanh" do
+          cat > Casks/vkey.rb << 'EOF'
+          cask "vkey" do
             version "VERSION_PLACEHOLDER"
             sha256 "SHA256_PLACEHOLDER"
 
-            url "https://github.com/khaphanspace/gonhanh.org/releases/download/v#{version}/GoNhanh.dmg"
-            name "Gõ Nhanh"
+            url "https://github.com/khaphanspace/vkey.org/releases/download/v#{version}/VKey.dmg"
+            name "VKey"
             desc "High-performance Vietnamese Input Method Engine for macOS"
-            homepage "https://github.com/khaphanspace/gonhanh.org"
+            homepage "https://github.com/khaphanspace/vkey.org"
 
             auto_updates true
 
@@ -459,41 +459,41 @@ jobs:
               strategy :github_latest
             end
 
-            app "GoNhanh.app"
+            app "VKey.app"
 
             preflight do
               system_command "/usr/bin/pkill",
-                             args: ["-x", "GoNhanh"],
+                             args: ["-x", "VKey"],
                              sudo: false,
                              must_succeed: false
               sleep 1
             end
 
-            uninstall quit: "org.gonhanh.GoNhanh"
+            uninstall quit: "org.vkey.VKey"
 
             postflight do
               system_command "/usr/bin/xattr",
-                             args: ["-cr", "#{appdir}/GoNhanh.app"],
+                             args: ["-cr", "#{appdir}/VKey.app"],
                              sudo: false
               system_command "/usr/bin/open",
-                             args: ["-a", "GoNhanh"],
+                             args: ["-a", "VKey"],
                              sudo: false
             end
 
             zap trash: [
-              "~/Library/Preferences/space.khaphan.gonhanh.plist",
-              "~/Library/Application Support/GoNhanh",
+              "~/Library/Preferences/space.khaphan.vkey.plist",
+              "~/Library/Application Support/VKey",
             ]
           end
           EOF
-          sed -i 's/^          //' Casks/gonhanh.rb
-          sed -i "s/VERSION_PLACEHOLDER/${VERSION}/" Casks/gonhanh.rb
-          sed -i "s/SHA256_PLACEHOLDER/${SHA256}/" Casks/gonhanh.rb
+          sed -i 's/^          //' Casks/vkey.rb
+          sed -i "s/VERSION_PLACEHOLDER/${VERSION}/" Casks/vkey.rb
+          sed -i "s/SHA256_PLACEHOLDER/${SHA256}/" Casks/vkey.rb
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Casks/gonhanh.rb
-          git commit -m "Update gonhanh to ${VERSION}"
+          git add Casks/vkey.rb
+          git commit -m "Update vkey to ${VERSION}"
           git push
 
   build-windows:
@@ -517,19 +517,19 @@ jobs:
         run: |
           cd core
           cargo build --release --target x86_64-pc-windows-msvc
-          Copy-Item "target/x86_64-pc-windows-msvc/release/gonhanh_core.dll" `
-                    "../platforms/windows/GoNhanh/Native/gonhanh_core.dll"
+          Copy-Item "target/x86_64-pc-windows-msvc/release/vkey_core.dll" `
+                    "../platforms/windows/VKey/Native/vkey_core.dll"
 
       - name: Build WPF App
         run: |
-          cd platforms/windows/GoNhanh
+          cd platforms/windows/VKey
           dotnet publish -c Release -r win-x64 --self-contained false -o ../publish
 
       - name: Package
         run: |
           cd platforms/windows
           $V = "${{ github.ref_name }}".TrimStart('v')
-          Compress-Archive -Path publish/* -DestinationPath "GoNhanh-$V-win-x64.zip"
+          Compress-Archive -Path publish/* -DestinationPath "VKey-$V-win-x64.zip"
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4

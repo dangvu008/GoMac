@@ -1,9 +1,10 @@
 import Foundation
-import Carbon.HIToolbox
+import Cocoa
+import Carbon
 
-/// Non-Latin language codes that require disabling Gõ Nhanh
+/// Non-Latin language codes that require disabling VKey
 /// These languages use scripts incompatible with Vietnamese input
-private let nonLatinLanguages: Set<String> = [
+private let NON_LATIN_LANGUAGES: Set<String> = [
     // East Asian
     "ja", "zh", "zh-Hans", "zh-Hant", "ko",
     // Southeast Asian (non-Latin scripts)
@@ -20,8 +21,8 @@ private let nonLatinLanguages: Set<String> = [
 
 // MARK: - Input Source Observer
 
-/// Observes input source changes and auto-enables/disables Gõ Nhanh
-final class InputSourceObserver {
+/// Observes input source changes and auto-enables/disables VKey
+class InputSourceObserver {
     static let shared = InputSourceObserver()
 
     private var isObserving = false
@@ -30,7 +31,9 @@ final class InputSourceObserver {
     /// Current input source display character (for menu icon)
     private(set) var currentDisplayChar: String = "V"
 
-    /// Whether Gõ Nhanh is allowed for current input source
+    /// Whether VKey is allowed for current input source
+    /// Returns true for Latin-based languages (English, French, etc.)
+    /// Returns false for non-Latin languages (Japanese, Korean, etc.)
     private(set) var isAllowedInputSource: Bool = true
 
     private init() {}
@@ -68,7 +71,7 @@ final class InputSourceObserver {
     }
 
     func stop() {
-        guard isObserving else { return }
+        guard !isObserving else { return }
         isObserving = false
 
         CFNotificationCenterRemoveObserver(
@@ -119,7 +122,7 @@ final class InputSourceObserver {
         // Block if language is in non-Latin set
         // Also check base language code (e.g., "zh-Hans" → "zh")
         let baseLang = lang.split(separator: "-").first.map(String.init) ?? lang
-        return !nonLatinLanguages.contains(lang) && !nonLatinLanguages.contains(baseLang)
+        return !NON_LATIN_LANGUAGES.contains(lang) && !NON_LATIN_LANGUAGES.contains(baseLang)
     }
 
     private func getDisplayChar(from source: TISInputSource, id: String) -> String {
@@ -129,8 +132,8 @@ final class InputSourceObserver {
            let lang = langs.first {
             switch lang {
             // East Asian
-            case "ja": return "あ"
-            case "zh-Hans", "zh-Hant", "zh": return "中"
+            case "ja": return "A"  // Japanese Romaji
+            case "zh-Hans", "zh-Hant", "zh": return "中" // Chinese
             case "ko": return "한"
             // Southeast Asian (ASEAN)
             case "th": return "ก"
@@ -142,7 +145,7 @@ final class InputSourceObserver {
             case "bn": return "অ"  // Bengali/Bangla
             case "ta": return "அ"  // Tamil
             // Other common
-            case "vi": return "E"  // Vietnamese input source = Gõ Nhanh disabled
+            case "vi": return "E"  // Vietnamese input source = VKey disabled
             case "ru": return "Р"
             case "ar": return "ع"
             case "he": return "א"
@@ -205,6 +208,16 @@ final class KeyboardLayoutSwitcher {
         "com.apple.keylayout.British",      // British (similar to US)
     ]
     
+    /// JIS layout IDs in priority order
+    private let jisLayoutIds = [
+        "com.apple.keylayout.Japanese",              // Japanese JIS
+        "com.apple.keylayout.Japanese.Romaji",       // Japanese Romaji
+        "com.apple.keylayout.ABC-QWERTY",            // ABC QWERTY (common on JIS Macs)
+    ]
+    
+    /// Saved layout ID before switching (for restore)
+    private var savedLayoutId: String?
+    
     private init() {}
     
     /// Switch to U.S. keyboard layout (or best Latin alternative)
@@ -212,10 +225,14 @@ final class KeyboardLayoutSwitcher {
     @discardableResult
     func switchToUSLayout() -> Bool {
         // Lấy layout hiện tại để check xem có cần switch không
-        if let currentId = getCurrentLayoutId(),
-           preferredLayoutIds.contains(where: { currentId.contains($0.replacingOccurrences(of: "com.apple.keylayout.", with: "")) }) {
-            print("[KeyboardLayoutSwitcher] Already using preferred layout: \(currentId)")
-            return true
+        if let currentId = getCurrentLayoutId() {
+            if preferredLayoutIds.contains(where: { currentId.contains($0.replacingOccurrences(of: "com.apple.keylayout.", with: "")) }) {
+                print("[KeyboardLayoutSwitcher] Already using preferred layout: \(currentId)")
+                return true
+            }
+            // Lưu layout gốc trước khi switch
+            savedLayoutId = currentId
+            UserDefaults.standard.set(currentId, forKey: "vkey.savedLayoutId")
         }
         
         // Tìm và kích hoạt layout US
@@ -242,6 +259,45 @@ final class KeyboardLayoutSwitcher {
         
         print("[KeyboardLayoutSwitcher] No suitable Latin keyboard layout found")
         return false
+    }
+    
+    /// Switch back to JIS keyboard layout (or restore saved layout)
+    /// - Returns: true if successfully switched, false otherwise
+    @discardableResult
+    func switchToJISLayout() -> Bool {
+        // Ưu tiên: restore layout đã lưu trước đó
+        let layoutToRestore = savedLayoutId ?? UserDefaults.standard.string(forKey: "vkey.savedLayoutId")
+        
+        if let targetId = layoutToRestore,
+           let source = findInputSource(withId: targetId) {
+            let status = TISSelectInputSource(source)
+            if status == noErr {
+                print("[KeyboardLayoutSwitcher] Restored saved layout: \(targetId)")
+                savedLayoutId = nil
+                UserDefaults.standard.removeObject(forKey: "vkey.savedLayoutId")
+                return true
+            }
+        }
+        
+        // Fallback: tìm JIS layout
+        for targetId in jisLayoutIds {
+            if let source = findInputSource(withId: targetId) {
+                let status = TISSelectInputSource(source)
+                if status == noErr {
+                    print("[KeyboardLayoutSwitcher] Switched to JIS: \(targetId)")
+                    return true
+                }
+            }
+        }
+        
+        print("[KeyboardLayoutSwitcher] No JIS layout found to restore")
+        return false
+    }
+    
+    /// Check if currently using US/Latin layout
+    var isCurrentlyUS: Bool {
+        guard let currentId = getCurrentLayoutId() else { return false }
+        return preferredLayoutIds.contains(where: { currentId.contains($0.replacingOccurrences(of: "com.apple.keylayout.", with: "")) })
     }
     
     /// Get current input source ID

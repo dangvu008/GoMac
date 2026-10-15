@@ -1,6 +1,6 @@
 //
 //  SpecialPanelAppDetector.swift
-//  GoNhanh
+//  VKey
 //
 //  Detects special panel apps (Spotlight, Raycast) that don't trigger
 //  NSWorkspaceDidActivateApplicationNotification

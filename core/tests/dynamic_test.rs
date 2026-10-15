@@ -4,8 +4,8 @@
 //! Tests modifier order flexibility: same output regardless of typing order.
 
 mod common;
-use gonhanh_core::engine::Engine;
-use gonhanh_core::utils::type_word;
+use vkey_core::engine::Engine;
+use vkey_core::utils::type_word;
 
 // =============================================================================
 // VIETNAMESE SYLLABLE COMPONENTS
@@ -47,20 +47,6 @@ fn apply_tone(v: char, t: &str) -> char {
 
 fn test(input: &str, expected: &str) -> Result<(), String> {
     let mut e = Engine::new();
-    let result = type_word(&mut e, input);
-    if result == expected {
-        Ok(())
-    } else {
-        Err(format!(
-            "'{}' → '{}' (expected '{}')",
-            input, result, expected
-        ))
-    }
-}
-
-fn test_auto_restore(input: &str, expected: &str) -> Result<(), String> {
-    let mut e = Engine::new();
-    e.set_english_auto_restore(true);
     let result = type_word(&mut e, input);
     if result == expected {
         Ok(())
@@ -268,36 +254,6 @@ fn dynamic_all_tones_ai() {
         "\n=== All Tones AI: 100 generated, {} failed ===",
         errors.len()
     );
-    assert!(errors.is_empty(), "{} tests failed", errors.len());
-}
-
-// =============================================================================
-// TEST 6: ENGLISH AUTO-RESTORE
-// =============================================================================
-
-#[test]
-fn dynamic_english_restore() {
-    // Note: "data" removed - produces "dât" which is valid Vietnamese structure
-    let english = &[
-        "view", "raw", "law", "saw", "new", "few", "half", "wolf", "golf",
-        // SW words
-        "sweet", "swim", "switch", "swift", "swing", "swear", "sword", "swipe",
-    ];
-    let mut errors = vec![];
-    for word in english {
-        let input = format!("{} ", word);
-        if let Err(e) = test_auto_restore(&input, &input) {
-            errors.push(e);
-        }
-    }
-    println!(
-        "\n=== English Restore: {} generated, {} failed ===",
-        english.len(),
-        errors.len()
-    );
-    for e in &errors {
-        println!("  FAIL: {}", e);
-    }
     assert!(errors.is_empty(), "{} tests failed", errors.len());
 }
 

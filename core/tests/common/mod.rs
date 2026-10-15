@@ -1,18 +1,15 @@
 //! Common test utilities - Re-exports from core + integration test helpers
 //!
-//! Core functions are shared from `gonhanh_core::test_utils`.
+//! Core functions are shared from `vkey_core::test_utils`.
 //! This module adds additional helpers for integration tests.
 
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
 // Re-export core test utilities
-pub use gonhanh_core::utils::{
-    telex, telex_auto_capitalize, telex_auto_restore, telex_traditional, type_word, vni,
-    vni_traditional,
-};
+pub use vkey_core::utils::{telex, telex_traditional, type_word, vni, vni_traditional};
 
-use gonhanh_core::engine::{Action, Engine};
+use vkey_core::engine::{Action, Engine};
 
 // ============================================================
 // TEST RUNNERS - Extended helpers for integration tests

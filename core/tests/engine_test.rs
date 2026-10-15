@@ -1,8 +1,8 @@
 //! Engine Tests - Syllable parsing, validation, and transformation
 
 mod common;
-use common::{telex, telex_auto_restore, vni};
-use gonhanh_core::engine::Engine;
+use common::{telex, vni};
+use vkey_core::engine::Engine;
 
 // ============================================================
 // SYLLABLE PARSING TESTS
@@ -489,7 +489,7 @@ fn extended_vowel_with_consonant_prefix() {
 fn extended_vowel_with_auto_restore() {
     // Issue #211: Extended vowels should work with auto-restore enabled
     // When auto-restore is enabled, extended vowels should still work correctly
-    telex_auto_restore(&[
+    telex(&[
         // Basic extended vowels (no space trigger - mid-word)
         ("aaaa", "aaa"),
         ("aaaaa", "aaaa"),
@@ -761,35 +761,9 @@ fn delayed_circumflex_diphthong_pattern() {
 }
 
 #[test]
-fn delayed_circumflex_auto_restore_space() {
-    // V+C+V circumflex patterns with stop consonant finals (t/c/p) WITHOUT mark
-    // are almost never real Vietnamese words → restore to English
-    // Compare: "tốt" (with sắc) is Vietnamese, but "tôt" (no mark) is not
-    use gonhanh_core::utils::type_word;
-
-    let cases = [
-        ("toto ", "toto "),  // tôt (no mark) is NOT real VI → restore to English
-        ("data ", "data "),  // dât (no mark) is NOT real VI → restore to English
-        ("dataa ", "data "), // Revert: dataa → data (circumflex reverted)
-        ("dataas", "datas"), // Revert then mark: dataa → data, then 's' stays as letter
-        ("noto ", "noto "),  // nôt (no mark) is NOT real VI → restore to English
-        ("hete ", "hete "),  // hêt (no mark) is NOT real VI → restore to English
-        ("tetee ", "tete "), // Revert: tetee → tete (circumflex reverted)
-        ("cocoo ", "coco "), // Revert: cocoo → coco (circumflex reverted)
-    ];
-
-    for (input, expected) in cases {
-        let mut e = Engine::new();
-        e.set_english_auto_restore(true);
-        let result = type_word(&mut e, input);
-        assert_eq!(result, expected, "Auto-restore failed for '{}'", input);
-    }
-}
-
-#[test]
 fn delayed_circumflex_valid_vietnamese_stays() {
     // Valid Vietnamese with marks should NOT be restored
-    use gonhanh_core::utils::type_word;
+    use vkey_core::utils::type_word;
 
     let cases = [
         ("dausa ", "dấu "), // Valid: dấu (mark typed)
@@ -805,7 +779,6 @@ fn delayed_circumflex_valid_vietnamese_stays() {
 
     for (input, expected) in cases {
         let mut e = Engine::new();
-        e.set_english_auto_restore(true);
         let result = type_word(&mut e, input);
         assert_eq!(
             result, expected,
@@ -816,41 +789,11 @@ fn delayed_circumflex_valid_vietnamese_stays() {
 }
 
 #[test]
-fn delayed_circumflex_punctuation_restore() {
-    // Punctuation marks trigger auto-restore for INVALID Vietnamese
-    // V+C+V circumflex with stop consonant (t/c/p) without mark → restore to English
-    use gonhanh_core::utils::type_word;
-
-    let cases = [
-        ("toto,", "toto,"), // tôt (no mark) is NOT real VI → restore to English
-        ("data.", "data."), // dât (no mark) is NOT real VI → restore to English
-        ("data;", "data;"), // dât (no mark) is NOT real VI → restore to English
-        ("dausa,", "dấu,"), // Valid Vietnamese stays (with mark)
-        ("user.", "user."), // English word + dot (usẻ invalid VI → restore)
-        ("user,", "user,"), // English word + comma
-        ("user;", "user;"), // English word + semicolon
-        ("user:", "user:"), // English word + colon
-        ("user@", "user@"), // English word + @ (email pattern)
-    ];
-
-    for (input, expected) in cases {
-        let mut e = Engine::new();
-        e.set_english_auto_restore(true);
-        let result = type_word(&mut e, input);
-        assert_eq!(
-            result, expected,
-            "Punctuation auto-restore failed for '{}'",
-            input
-        );
-    }
-}
-
-#[test]
 fn delayed_circumflex_no_false_positives() {
     // Words that should NOT get circumflex
     // - Words where target vowel already has a mark
     // - Words with invalid diphthong patterns
-    use gonhanh_core::utils::type_word;
+    use vkey_core::utils::type_word;
 
     // "expect" = e-x-p-e-c-t: 'x' applies ngã to 'e', second 'e' should NOT trigger circumflex
     let mut e1 = Engine::new();
@@ -880,7 +823,7 @@ fn single_vowel_sac_space() {
     // Single vowel + sắc (s) + space
     // ALL are valid Vietnamese - should NOT restore
     // Logic: valid_VN → keep VN (don't check English first)
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("as ", "á "), // Valid VN: á (exclamation)
         ("es ", "é "), // Valid VN: é (exclamation)
         ("is ", "í "), // Valid VN: í (exclamation)
@@ -894,7 +837,7 @@ fn single_vowel_sac_space() {
 fn single_vowel_huyen_space() {
     // Single vowel + huyền (f) + space
     // ALL are valid Vietnamese - should NOT restore
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("af ", "à "), // Valid VN: à (realization)
         ("ef ", "è "), // Valid VN: è (exclamation)
         ("if ", "ì "), // Valid VN: ì (as in "ì ạch")
@@ -908,7 +851,7 @@ fn single_vowel_huyen_space() {
 fn single_vowel_hoi_space() {
     // Single vowel + hỏi (r) + space
     // ALL are valid Vietnamese - should NOT restore
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("ar ", "ả "), // Valid VN: ả
         ("er ", "ẻ "), // Valid VN: ẻ
         ("ir ", "ỉ "), // Valid VN: ỉ
@@ -922,7 +865,7 @@ fn single_vowel_hoi_space() {
 fn single_vowel_nga_space() {
     // Single vowel + ngã (x) + space
     // ALL are valid Vietnamese - should NOT restore
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("ax ", "ã "), // Valid VN: ã
         ("ex ", "ẽ "), // Valid VN: ẽ
         ("ix ", "ĩ "), // Valid VN: ĩ
@@ -937,7 +880,7 @@ fn single_vowel_nang_space() {
     // Single vowel + nặng (j) + space
     // ALL are valid Vietnamese - should NOT restore
     // Especially "ạ" which is very common ("vâng ạ", "dạ ạ")
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("aj ", "ạ "), // Valid VN: ạ (respectful particle)
         ("ej ", "ẹ "), // Valid VN: ẹ
         ("ij ", "ị "), // Valid VN: ị
@@ -951,7 +894,7 @@ fn single_vowel_nang_space() {
 fn single_horn_ow_tone_space() {
     // ơ (ow) + tone marks + space
     // All are valid Vietnamese interjections: ớ, ờ, ở, ỡ, ợ
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("ows ", "ớ "), // Valid VN: ớ (exclamation)
         ("owf ", "ờ "), // Valid VN: ờ (exclamation)
         ("owr ", "ở "), // Valid VN: ở (to live/stay)
@@ -964,7 +907,7 @@ fn single_horn_ow_tone_space() {
 fn single_horn_uw_tone_space() {
     // ư (uw) + tone marks + space
     // All are valid Vietnamese interjections: ứ, ừ, ử, ữ, ự
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("uws ", "ứ "), // Valid VN: ứ (exclamation)
         ("uwf ", "ừ "), // Valid VN: ừ (informal yes/agreement)
         ("uwr ", "ử "), // Valid VN: ử
@@ -980,7 +923,7 @@ fn single_horn_uw_tone_space() {
 #[test]
 fn diphthong_ai_tone_space() {
     // ai + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("ais ", "ái "),
         ("aif ", "ài "),
         ("air ", "ải "),
@@ -992,7 +935,7 @@ fn diphthong_ai_tone_space() {
 #[test]
 fn diphthong_ao_tone_space() {
     // ao + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("aos ", "áo "),
         ("aof ", "ào "),
         ("aor ", "ảo "),
@@ -1004,7 +947,7 @@ fn diphthong_ao_tone_space() {
 #[test]
 fn diphthong_au_tone_space() {
     // au + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("aus ", "áu "),
         ("auf ", "àu "),
         ("aur ", "ảu "),
@@ -1016,7 +959,7 @@ fn diphthong_au_tone_space() {
 #[test]
 fn diphthong_ay_tone_space() {
     // ay + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("ays ", "áy "),
         ("ayf ", "ày "),
         ("ayr ", "ảy "),
@@ -1028,7 +971,7 @@ fn diphthong_ay_tone_space() {
 #[test]
 fn diphthong_aau_tone_space() {
     // âu (aa + u) + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("aaus ", "ấu "),
         ("aauf ", "ầu "),
         ("aaur ", "ẩu "),
@@ -1040,7 +983,7 @@ fn diphthong_aau_tone_space() {
 #[test]
 fn diphthong_aay_tone_space() {
     // ây (aa + y) + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("aays ", "ấy "),
         ("aayf ", "ầy "),
         ("aayr ", "ẩy "),
@@ -1052,7 +995,7 @@ fn diphthong_aay_tone_space() {
 #[test]
 fn diphthong_eo_tone_space() {
     // eo + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("eos ", "éo "),
         ("eof ", "èo "),
         ("eor ", "ẻo "),
@@ -1064,7 +1007,7 @@ fn diphthong_eo_tone_space() {
 #[test]
 fn diphthong_eeu_tone_space() {
     // êu (ee + u) + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("eeus ", "ếu "),
         ("eeuf ", "ều "),
         ("eeur ", "ểu "),
@@ -1076,7 +1019,7 @@ fn diphthong_eeu_tone_space() {
 #[test]
 fn diphthong_ia_tone_space() {
     // ia + tone marks + space (tone on i - main vowel)
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("ias ", "ía "),
         ("iaf ", "ìa "),
         ("iar ", "ỉa "),
@@ -1088,7 +1031,7 @@ fn diphthong_ia_tone_space() {
 #[test]
 fn diphthong_iu_tone_space() {
     // iu + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("ius ", "íu "),
         ("iuf ", "ìu "),
         ("iur ", "ỉu "),
@@ -1101,7 +1044,7 @@ fn diphthong_iu_tone_space() {
 fn diphthong_oa_tone_space() {
     // oa + tone marks + space
     // Note: in "oa" glide pattern, tone goes on 'a' (main vowel), not 'o'
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("oas ", "oá "),
         ("oaf ", "oà "),
         ("oar ", "oả "),
@@ -1114,7 +1057,7 @@ fn diphthong_oa_tone_space() {
 fn diphthong_oe_tone_space() {
     // oe + tone marks + space
     // Note: in "oe" glide pattern, tone goes on 'e' (main vowel), not 'o'
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("oes ", "oé "),
         ("oef ", "oè "),
         ("oer ", "oẻ "),
@@ -1126,7 +1069,7 @@ fn diphthong_oe_tone_space() {
 #[test]
 fn diphthong_oi_tone_space() {
     // oi + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("ois ", "ói "),
         ("oif ", "òi "),
         ("oir ", "ỏi "),
@@ -1138,7 +1081,7 @@ fn diphthong_oi_tone_space() {
 #[test]
 fn diphthong_ooi_tone_space() {
     // ôi (oo + i) + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("oois ", "ối "),
         ("ooif ", "ồi "),
         ("ooir ", "ổi "),
@@ -1150,7 +1093,7 @@ fn diphthong_ooi_tone_space() {
 #[test]
 fn diphthong_owi_tone_space() {
     // ơi (ow + i) + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("owis ", "ới "),
         ("owif ", "ời "),
         ("owir ", "ởi "),
@@ -1162,7 +1105,7 @@ fn diphthong_owi_tone_space() {
 #[test]
 fn diphthong_ua_tone_space() {
     // ua + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("uas ", "úa "),
         ("uaf ", "ùa "),
         ("uar ", "ủa "),
@@ -1174,7 +1117,7 @@ fn diphthong_ua_tone_space() {
 #[test]
 fn diphthong_uee_tone_space() {
     // uê (u + ee) + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("uees ", "uế "),
         ("ueef ", "uề "),
         ("ueer ", "uể "),
@@ -1186,7 +1129,7 @@ fn diphthong_uee_tone_space() {
 #[test]
 fn diphthong_ui_tone_space() {
     // ui + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("uis ", "úi "),
         ("uif ", "ùi "),
         ("uir ", "ủi "),
@@ -1199,7 +1142,7 @@ fn diphthong_ui_tone_space() {
 fn diphthong_uow_tone_space() {
     // uơ (u + ow) + tone marks + space
     // Issue #133: only 'ơ' gets horn when no final consonant ("uơ" not "ươ")
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("uows ", "uớ "),
         ("uowf ", "uờ "),
         ("uowr ", "uở "),
@@ -1211,7 +1154,7 @@ fn diphthong_uow_tone_space() {
 #[test]
 fn diphthong_uwi_tone_space() {
     // ưi (uw + i) + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("uwis ", "ứi "),
         ("uwif ", "ừi "),
         ("uwir ", "ửi "),
@@ -1227,7 +1170,7 @@ fn diphthong_uwi_tone_space() {
 #[test]
 fn triphthong_ieu_tone_space() {
     // iêu (i + ee + u) + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("ieeus ", "iếu "),
         ("ieeuf ", "iều "),
         ("ieeur ", "iểu "),
@@ -1239,7 +1182,7 @@ fn triphthong_ieu_tone_space() {
 #[test]
 fn triphthong_oai_tone_space() {
     // oai + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("oais ", "oái "),
         ("oaif ", "oài "),
         ("oair ", "oải "),
@@ -1251,7 +1194,7 @@ fn triphthong_oai_tone_space() {
 #[test]
 fn triphthong_oay_tone_space() {
     // oay + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("oays ", "oáy "),
         ("oayf ", "oày "),
         ("oayr ", "oảy "),
@@ -1263,7 +1206,7 @@ fn triphthong_oay_tone_space() {
 #[test]
 fn triphthong_uoi_tone_space() {
     // uôi (u + oo + i) + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("uoois ", "uối "),
         ("uooif ", "uồi "),
         ("uooir ", "uổi "),
@@ -1275,7 +1218,7 @@ fn triphthong_uoi_tone_space() {
 #[test]
 fn triphthong_uowi_tone_space() {
     // ươi (u + ow + i) + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("uowis ", "ưới "),
         ("uowif ", "ười "),
         ("uowir ", "ưởi "),
@@ -1288,7 +1231,7 @@ fn triphthong_uowi_tone_space() {
 fn triphthong_uya_tone_space() {
     // uya + tone marks + space
     // Note: "uya" patterns often get restored as they look like English
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("uyas ", "uyas "), // Restored: looks like English
         ("uyaf ", "uyaf "), // Restored: looks like English
         ("uyar ", "uyar "), // Restored: looks like English
@@ -1300,7 +1243,7 @@ fn triphthong_uya_tone_space() {
 #[test]
 fn triphthong_yeu_tone_space() {
     // yêu (y + ee + u) + tone marks + space
-    common::telex_auto_restore(&[
+    common::telex(&[
         ("yeeus ", "yếu "),
         ("yeeuf ", "yều "),
         ("yeeur ", "yểu "),
@@ -1315,7 +1258,7 @@ fn telex_double_not_in_whitelist_keeps_buffer() {
     // keep buffer instead of restoring to raw input.
     // Telex modifiers that trigger double: s, f, r, x, j (tone), d (stroke)
     // Example: "taxxi" → "taxi" (xx reverts, "taxxi" not in whitelist, keep buffer)
-    common::telex_auto_restore(&[
+    common::telex(&[
         // xx reverts (ngã) - words NOT in whitelist
         ("taxxi ", "taxi "), // tãxi → taxi
         ("maxx ", "max "),   // mãx → max
@@ -1333,73 +1276,12 @@ fn telex_double_not_in_whitelist_keeps_buffer() {
 /// "teen" has double-e pattern but "tên" is valid Vietnamese → keep Vietnamese
 #[test]
 fn vietnamese_first_ten() {
-    use common::telex_auto_restore;
-    telex_auto_restore(&[
+    use common::telex;
+    telex(&[
         ("teen ", "tên "),  // "tên" = name, valid Vietnamese → keep
         ("teens ", "tến "), // with tone (s = sắc)
         ("teenf ", "tền "), // with huyền tone
     ]);
-}
-
-#[test]
-fn debug_moscow() {
-    use gonhanh_core::engine::Engine;
-    use gonhanh_core::utils::type_word;
-
-    let mut e = Engine::new();
-    e.set_english_auto_restore(true);
-    let result = type_word(&mut e, "moscow ");
-    assert_eq!(result, "moscow ");
-}
-
-#[test]
-fn debug_writer() {
-    use gonhanh_core::engine::Engine;
-
-    let mut e = Engine::new();
-    e.set_english_auto_restore(true);
-
-    // Type char by char and trace
-    let chars = ['w', 'r', 'i', 't', 'e', 'r', ' '];
-    let mut output = String::new();
-
-    for ch in chars {
-        let key = match ch.to_ascii_lowercase() {
-            'w' => 13,
-            'r' => 15,
-            'i' => 34,
-            't' => 17,
-            'e' => 14,
-            ' ' => 49,
-            _ => 255,
-        };
-        let result = e.on_key(key, false, false);
-
-        if result.action == 1 {
-            let bs = result.backspace as usize;
-            for _ in 0..bs.min(output.len()) {
-                output.pop();
-            }
-            for i in 0..result.count as usize {
-                if let Some(c) = char::from_u32(result.chars[i]) {
-                    output.push(c);
-                }
-            }
-        } else {
-            output.push(ch);
-        }
-
-        println!(
-            "After '{}': buffer='{}', raw_len={}, is_raw_english={}",
-            ch,
-            e.get_buffer_string(),
-            e.raw_input_len(),
-            e.is_raw_english()
-        );
-    }
-
-    println!("\nFinal output: '{}'", output);
-    assert_eq!(output, "writer ");
 }
 
 /// Test: UI diphthong typing order should produce same result
@@ -1407,7 +1289,7 @@ fn debug_writer() {
 /// Fix: Added keys::I to UI diphthong pattern in has_english_modifier_pattern()
 #[test]
 fn ui_diphthong_typing_order() {
-    use common::{telex, telex_auto_restore};
+    use common::telex;
 
     // Without auto-restore: both orders should work
     telex(&[
@@ -1420,7 +1302,7 @@ fn ui_diphthong_typing_order() {
     ]);
 
     // With auto-restore: should not restore valid Vietnamese UI diphthong
-    telex_auto_restore(&[
+    telex(&[
         ("tuji ", "tụi "),
         ("tuij ", "tụi "),
         ("muri ", "mủi "),

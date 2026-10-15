@@ -21,7 +21,7 @@ log() {
 # Initialize CSV
 echo "version,run,idle_cpu,typing_cpu,overhead,samples,timestamp" > "$RESULT_CSV"
 
-log "=== GoNhanh Benchmark Compare ==="
+log "=== VKey Benchmark Compare ==="
 log "Date: $(date)"
 log "CSV: $RESULT_CSV"
 log ""
@@ -116,18 +116,18 @@ log "=== BUILDING PR VERSION ==="
 make build > /tmp/build.log 2>&1 || { log "Build failed!"; exit 1; }
 log "Build: OK"
 
-pkill -9 GoNhanh 2>/dev/null || true
+pkill -9 VKey 2>/dev/null || true
 sleep 1
-rm -rf /tmp/GoNhanh-PR.app 2>/dev/null || true
-cp -r platforms/macos/build/Release/GoNhanh.app /tmp/GoNhanh-PR.app
+rm -rf /tmp/VKey-PR.app 2>/dev/null || true
+cp -r platforms/macos/build/Release/VKey.app /tmp/VKey-PR.app
 
 log ""
 log "=== TESTING PR VERSION ==="
-open /tmp/GoNhanh-PR.app
+open /tmp/VKey-PR.app
 sleep 3
 
-PID=$(pgrep -x GoNhanh)
-[ -z "$PID" ] && { log "Error: GoNhanh not running"; exit 1; }
+PID=$(pgrep -x VKey)
+[ -z "$PID" ] && { log "Error: VKey not running"; exit 1; }
 log "PID: $PID"
 
 for i in $(seq 1 $RUNS); do
@@ -145,17 +145,17 @@ git checkout main 2>/dev/null
 make build > /tmp/build.log 2>&1 || { log "Build failed!"; exit 1; }
 log "Build: OK"
 
-pkill -9 GoNhanh 2>/dev/null || true
+pkill -9 VKey 2>/dev/null || true
 sleep 1
-cp -r platforms/macos/build/Release/GoNhanh.app /Applications/
+cp -r platforms/macos/build/Release/VKey.app /Applications/
 
 log ""
 log "=== TESTING ORIGINAL VERSION ==="
-open /Applications/GoNhanh.app
+open /Applications/VKey.app
 sleep 3
 
-PID=$(pgrep -x GoNhanh)
-[ -z "$PID" ] && { log "Error: GoNhanh not running"; exit 1; }
+PID=$(pgrep -x VKey)
+[ -z "$PID" ] && { log "Error: VKey not running"; exit 1; }
 log "PID: $PID"
 
 for i in $(seq 1 $RUNS); do

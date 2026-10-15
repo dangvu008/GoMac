@@ -1,11 +1,11 @@
-# Contributing to Gõ Nhanh
+# Contributing to VKey
 
 Thank you for your interest in contributing! 🎉
 
 ## Getting Started
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/khaphanspace/gonhanh.org`
+2. Clone your fork: `git clone https://github.com/khaphanspace/vkey.org`
 3. Run setup: `./scripts/setup.sh`
 4. Create a branch: `git checkout -b feature/my-feature`
 
@@ -33,7 +33,7 @@ cargo build --release
 
 ### For macOS UI
 
-1. Open `platforms/macos/GoNhanh.xcodeproj` in Xcode
+1. Open `platforms/macos/VKey.xcodeproj` in Xcode
 2. Make changes to Swift files
 3. Test in Xcode
 4. Build and run

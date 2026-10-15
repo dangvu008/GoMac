@@ -44,7 +44,7 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "Options:"
             echo "  --version, -v VERSION  Build with custom version (e.g., 0.9.0 for testing updates)"
-            echo "  --clean                Remove existing GoNhanh app and clear permissions before building"
+            echo "  --clean                Remove existing VKey app and clear permissions before building"
             echo "  --sign, -s             Sign with Developer ID (requires certificate in Keychain)"
             echo "  --notarize, -n         Sign and notarize for distribution (requires Apple ID credentials)"
             echo "  --help                 Show this help message"
@@ -74,39 +74,39 @@ done
 if [ "$CLEAN_INSTALL" = true ]; then
     echo "Cleaning existing installation..."
 
-    # Kill running GoNhanh processes
-    if pgrep -f "GoNhanh" > /dev/null 2>&1; then
-        echo "Stopping running GoNhanh processes..."
-        pkill -f "GoNhanh" 2>/dev/null || true
+    # Kill running VKey processes
+    if pgrep -f "VKey" > /dev/null 2>&1; then
+        echo "Stopping running VKey processes..."
+        pkill -f "VKey" 2>/dev/null || true
         # Wait for process to terminate
         sleep 1
         # Force kill if still running
-        if pgrep -f "GoNhanh" > /dev/null 2>&1; then
-            echo "Force killing GoNhanh..."
-            pkill -9 -f "GoNhanh" 2>/dev/null || true
+        if pgrep -f "VKey" > /dev/null 2>&1; then
+            echo "Force killing VKey..."
+            pkill -9 -f "VKey" 2>/dev/null || true
             sleep 1
         fi
-        echo "GoNhanh processes stopped."
+        echo "VKey processes stopped."
     else
-        echo "No running GoNhanh process found."
+        echo "No running VKey process found."
     fi
 
     # Remove from /Applications (requires sudo)
-    if [ -d "/Applications/GoNhanh.app" ]; then
-        echo "Removing /Applications/GoNhanh.app (requires sudo)..."
-        sudo rm -rf "/Applications/GoNhanh.app"
+    if [ -d "/Applications/VKey.app" ]; then
+        echo "Removing /Applications/VKey.app (requires sudo)..."
+        sudo rm -rf "/Applications/VKey.app"
     fi
 
     # Remove from Input Methods
-    if [ -d "$HOME/Library/Input Methods/GoNhanh.app" ]; then
-        echo "Removing ~/Library/Input Methods/GoNhanh.app..."
-        rm -rf "$HOME/Library/Input Methods/GoNhanh.app"
+    if [ -d "$HOME/Library/Input Methods/VKey.app" ]; then
+        echo "Removing ~/Library/Input Methods/VKey.app..."
+        rm -rf "$HOME/Library/Input Methods/VKey.app"
     fi
 
     # Clear TCC database (Accessibility permissions) - requires Full Disk Access or SIP disabled
     echo "Note: To fully reset Accessibility permissions, go to:"
     echo "  System Settings > Privacy & Security > Accessibility"
-    echo "  Remove GoNhanh from the list manually"
+    echo "  Remove VKey from the list manually"
     echo ""
 
     # Clear input source registration
@@ -117,14 +117,14 @@ if [ "$CLEAN_INSTALL" = true ]; then
     echo ""
 fi
 
-# Always kill running GoNhanh before build (even without --clean)
-if pgrep -x "GoNhanh" > /dev/null 2>&1; then
-    echo "Stopping running GoNhanh..."
-    pkill -x "GoNhanh" 2>/dev/null || true
+# Always kill running VKey before build (even without --clean)
+if pgrep -x "VKey" > /dev/null 2>&1; then
+    echo "Stopping running VKey..."
+    pkill -x "VKey" 2>/dev/null || true
     sleep 0.5
     # Force kill if still running
-    if pgrep -x "GoNhanh" > /dev/null 2>&1; then
-        pkill -9 -x "GoNhanh" 2>/dev/null || true
+    if pgrep -x "VKey" > /dev/null 2>&1; then
+        pkill -9 -x "VKey" 2>/dev/null || true
         sleep 0.5
     fi
 fi
@@ -140,6 +140,14 @@ else
     VERSION=${GIT_TAG#v}  # Remove 'v' prefix
     echo "Version (git tag): $VERSION"
 fi
+
+# Auto-generate build number (yyyyMMddHHmm) and git hash
+BUILD_NUMBER=$(date +"%Y%m%d%H%M")
+GIT_HASH=$(git rev-parse --short=7 HEAD 2>/dev/null || echo "unknown")
+GIT_DIRTY=$(git diff --quiet 2>/dev/null && echo "" || echo "-dirty")
+BUILD_ID="${GIT_HASH}${GIT_DIRTY}"
+echo "Build number: $BUILD_NUMBER"
+echo "Git hash: $BUILD_ID"
 
 # Validate signing configuration
 if [ "$SIGN_APP" = true ]; then
@@ -177,18 +185,23 @@ fi
 # Build macOS app with xcodebuild
 cd "$(dirname "$0")/../platforms/macos"
 
-if [ -d "GoNhanh.xcodeproj" ]; then
+if [ -d "VKey.xcodeproj" ]; then
     echo "Building with Xcode..."
+
+    # Auto-detect architecture
+    ARCH=$(uname -m)
+    echo "Detected architecture: $ARCH"
 
     if [ "$SIGN_APP" = true ]; then
         echo "Building with Developer ID signing..."
-        xcodebuild -scheme GoNhanh \
+        xcodebuild -scheme VKey \
             -configuration Release \
-            -destination 'platform=macOS,arch=arm64' \
-            -destination 'platform=macOS,arch=x86_64' \
+            -destination "generic/platform=macOS" \
             -derivedDataPath "$(pwd)/build/DerivedData" \
             MARKETING_VERSION="$VERSION" \
-            CURRENT_PROJECT_VERSION="$VERSION" \
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+            INFOPLIST_OTHER_PREPROCESSOR_FLAGS="" \
+            VKEY_GIT_HASH="$BUILD_ID" \
             CODE_SIGN_IDENTITY="$APPLE_SIGNING_IDENTITY" \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             CODE_SIGN_STYLE="Manual" \
@@ -196,40 +209,50 @@ if [ -d "GoNhanh.xcodeproj" ]; then
             2>&1 | grep -v "Using the first of multiple matching destinations"
     else
         echo "Building with ad-hoc signing (development)..."
-        xcodebuild -scheme GoNhanh \
+        xcodebuild -scheme VKey \
             -configuration Release \
-            -destination 'platform=macOS,arch=arm64' \
-            -destination 'platform=macOS,arch=x86_64' \
+            -destination "generic/platform=macOS" \
             -derivedDataPath "$(pwd)/build/DerivedData" \
             MARKETING_VERSION="$VERSION" \
-            CURRENT_PROJECT_VERSION="$VERSION" \
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+            VKEY_GIT_HASH="$BUILD_ID" \
             2>&1 | grep -v "Using the first of multiple matching destinations"
     fi
 
     # Copy app from DerivedData to local build directory
     echo "Copying app to build directory..."
     mkdir -p build/Release
-    cp -R "build/DerivedData/Build/Products/Release/GoNhanh.app" build/Release/
+    cp -R "build/DerivedData/Build/Products/Release/VKey.app" build/Release/
+
+    # Inject version metadata into Info.plist
+    echo "Injecting build metadata..."
+    PLIST="build/Release/VKey.app/Contents/Info.plist"
+    /usr/libexec/PlistBuddy -c "Add :VKeyGitHash string $BUILD_ID" "$PLIST" 2>/dev/null || \
+        /usr/libexec/PlistBuddy -c "Set :VKeyGitHash $BUILD_ID" "$PLIST"
+    /usr/libexec/PlistBuddy -c "Add :VKeyBuildDate string $(date '+%Y-%m-%d %H:%M')" "$PLIST" 2>/dev/null || \
+        /usr/libexec/PlistBuddy -c "Set :VKeyBuildDate $(date '+%Y-%m-%d %H:%M')" "$PLIST"
+    echo "  Git hash: $BUILD_ID"
+    echo "  Build date: $(date '+%Y-%m-%d %H:%M')"
 
     # Sign app with entitlements
     echo "Signing app with entitlements..."
     if [ "$SIGN_APP" = true ]; then
         codesign --force --deep --sign "$APPLE_SIGNING_IDENTITY" \
-            --entitlements GoNhanh.entitlements.production \
+            --entitlements VKey.entitlements.production \
             --options runtime \
             --timestamp \
-            build/Release/GoNhanh.app
+            build/Release/VKey.app
         echo "Signed with Developer ID: $APPLE_SIGNING_IDENTITY"
     else
         codesign --force --deep --sign - \
-            --entitlements GoNhanh.entitlements \
-            build/Release/GoNhanh.app
+            --entitlements VKey.entitlements \
+            build/Release/VKey.app
         echo "Signed with ad-hoc identity (development only)"
     fi
 
     # Verify signature
     echo "Verifying signature..."
-    codesign -vvv --deep --strict build/Release/GoNhanh.app
+    codesign -vvv --deep --strict build/Release/VKey.app
     echo "Signature verified!"
 
     # Notarize if requested
@@ -239,11 +262,11 @@ if [ -d "GoNhanh.xcodeproj" ]; then
 
         # Create ZIP for notarization
         echo "Creating ZIP for notarization..."
-        ditto -c -k --keepParent build/Release/GoNhanh.app build/Release/GoNhanh-notarize.zip
+        ditto -c -k --keepParent build/Release/VKey.app build/Release/VKey-notarize.zip
 
         # Submit for notarization
         echo "Submitting to Apple for notarization (this may take a few minutes)..."
-        xcrun notarytool submit build/Release/GoNhanh-notarize.zip \
+        xcrun notarytool submit build/Release/VKey-notarize.zip \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_APP_PASSWORD" \
             --team-id "$APPLE_TEAM_ID" \
@@ -252,21 +275,21 @@ if [ -d "GoNhanh.xcodeproj" ]; then
 
         # Staple the notarization ticket
         echo "Stapling notarization ticket..."
-        xcrun stapler staple build/Release/GoNhanh.app
+        xcrun stapler staple build/Release/VKey.app
 
         # Verify notarization
         echo "Verifying notarization..."
-        spctl -a -vvv -t install build/Release/GoNhanh.app
+        spctl -a -vvv -t install build/Release/VKey.app
 
         # Cleanup
-        rm -f build/Release/GoNhanh-notarize.zip
+        rm -f build/Release/VKey-notarize.zip
 
         echo "Notarization completed!"
     fi
 
     echo ""
     echo "macOS app built successfully!"
-    echo "App: platforms/macos/build/Release/GoNhanh.app"
+    echo "App: platforms/macos/build/Release/VKey.app"
 
     if [ "$SIGN_APP" = true ]; then
         echo "Status: Signed with Developer ID"
@@ -286,8 +309,8 @@ else
     echo "Steps:"
     echo "  1. Open Xcode"
     echo "  2. Create new macOS App project"
-    echo "  3. Name: GoNhanh"
+    echo "  3. Name: VKey"
     echo "  4. Location: platforms/macos/"
-    echo "  5. Add Swift files from GoNhanh/ folder"
-    echo "  6. Link libgonhanh_core.a in Build Phases"
+    echo "  5. Add Swift files from VKey/ folder"
+    echo "  6. Link libvkey_core.a in Build Phases"
 fi

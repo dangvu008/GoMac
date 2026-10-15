@@ -11,7 +11,7 @@ NEXT_MAJOR := $(shell echo $(VER) | awk -F. '{print $$1+1".0.0"}')
 .DEFAULT_GOAL := help
 
 help: ## Show this help
-	@echo "⚡ Gõ Nhanh - Vietnamese Input Method Engine"
+	@echo "⚡ VKey - Vietnamese Input Method Engine"
 	@echo ""
 	@echo "Usage: make [target]"
 	@echo ""
@@ -33,9 +33,9 @@ format: ## Format & lint
 	@cd core && cargo fmt && cargo clippy -- -D warnings
 
 watch: ## Watch debug logs (tail -f)
-	@rm -f /tmp/gonhanh_debug.log && touch /tmp/gonhanh_debug.log
-	@echo "📋 Watching /tmp/gonhanh_debug.log (Ctrl+C to stop)"
-	@tail -f /tmp/gonhanh_debug.log
+	@rm -f /tmp/vkey_debug.log && touch /tmp/vkey_debug.log
+	@echo "📋 Watching /tmp/vkey_debug.log (Ctrl+C to stop)"
+	@tail -f /tmp/vkey_debug.log
 
 build: format ## Build core + macos app
 	@./scripts/build-core.sh
@@ -49,14 +49,14 @@ clean: ## Clean build + settings
 	@cd core && cargo clean
 	@rm -rf platforms/macos/build
 	@rm -rf platforms/linux/build
-	@defaults delete org.gonhanh.GoNhanh 2>/dev/null || true
+	@defaults delete com.dangvu008.VKey 2>/dev/null || true
 	@echo "✅ Cleaned build artifacts + settings"
 
 setup: ## Setup dev environment
 	@./scripts/setup.sh
 
 install: build ## Install app to /Applications
-	@cp -r platforms/macos/build/Release/GoNhanh.app /Applications/
+	@cp -r platforms/macos/build/Release/VKey.app /Applications/
 
 dmg: build ## Create DMG installer
 	@./scripts/create-dmg-background.sh
@@ -68,7 +68,7 @@ release: ## Patch release (1.0.9 → 1.0.10)
 	@./scripts/generate-release-notes.sh v$(NEXT_PATCH) > /tmp/release_notes.md
 	@git tag -a v$(NEXT_PATCH) -F /tmp/release_notes.md --cleanup=verbatim
 	@git push origin main v$(NEXT_PATCH)
-	@echo "→ https://github.com/khaphanspace/gonhanh.org/releases"
+	@echo "→ https://github.com/dangvu008/VKey/releases"
 
 release-minor: ## Minor release (1.0.9 → 1.1.0)
 	@echo "$(TAG) → v$(NEXT_MINOR)"
@@ -76,7 +76,7 @@ release-minor: ## Minor release (1.0.9 → 1.1.0)
 	@./scripts/generate-release-notes.sh v$(NEXT_MINOR) > /tmp/release_notes.md
 	@git tag -a v$(NEXT_MINOR) -F /tmp/release_notes.md --cleanup=verbatim
 	@git push origin main v$(NEXT_MINOR)
-	@echo "→ https://github.com/khaphanspace/gonhanh.org/releases"
+	@echo "→ https://github.com/dangvu008/VKey/releases"
 
 release-major: ## Major release (1.0.9 → 2.0.0)
 	@echo "$(TAG) → v$(NEXT_MAJOR)"
@@ -84,4 +84,4 @@ release-major: ## Major release (1.0.9 → 2.0.0)
 	@./scripts/generate-release-notes.sh v$(NEXT_MAJOR) > /tmp/release_notes.md
 	@git tag -a v$(NEXT_MAJOR) -F /tmp/release_notes.md --cleanup=verbatim
 	@git push origin main v$(NEXT_MAJOR)
-	@echo "→ https://github.com/khaphanspace/gonhanh.org/releases"
+	@echo "→ https://github.com/dangvu008/VKey/releases"

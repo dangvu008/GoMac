@@ -20,9 +20,9 @@ cargo build --release --target x86_64-apple-darwin
 # Create universal binary
 echo "Creating universal binary..."
 lipo -create \
-    target/aarch64-apple-darwin/release/libgonhanh_core.a \
-    target/x86_64-apple-darwin/release/libgonhanh_core.a \
-    -output ../platforms/macos/libgonhanh_core.a
+    target/aarch64-apple-darwin/release/libvkey_core.a \
+    target/x86_64-apple-darwin/release/libvkey_core.a \
+    -output ../platforms/macos/libvkey_core.a
 
 echo "✅ Rust core built successfully!"
-echo "📦 Output: platforms/macos/libgonhanh_core.a"
+echo "📦 Output: platforms/macos/libvkey_core.a"

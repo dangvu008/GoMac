@@ -13,7 +13,7 @@
     <key>CFBundleName</key>
     <string>$(PRODUCT_NAME)</string>
     <key>CFBundleDisplayName</key>
-    <string>GoMac</string>
+    <string>VKey</string>
     <key>CFBundlePackageType</key>
     <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
@@ -29,6 +29,6 @@
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
     <key>NSAppleEventsUsageDescription</key>
-    <string>Gõ Nhanh needs access to send keyboard events for Vietnamese input.</string>
+    <string>VKey needs access to send keyboard events for Vietnamese input.</string>
 </dict>
 </plist>

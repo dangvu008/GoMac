@@ -15,7 +15,7 @@ Bạn có thể cung cấp thêm:
 
 **Bật debug log:**
 ```bash
-touch /tmp/gonhanh_debug.log && tail -f /tmp/gonhanh_debug.log
+touch /tmp/vkey_debug.log && tail -f /tmp/vkey_debug.log
 ```
 
 Gõ lại để tái hiện lỗi, sau đó gửi log giúp mình nhé!
@@ -33,12 +33,12 @@ Cảm ơn bạn đã báo lỗi!
 ## ❓ Cần thêm thông tin
 
 Bạn có thể cung cấp thêm:
-1. Phiên bản Gõ Nhanh đang dùng?
+1. Phiên bản VKey đang dùng?
 2. Lỗi xảy ra ở app nào (Chrome, VS Code, ...)?
 
 **Bật debug log:**
 ```bash
-touch /tmp/gonhanh_debug.log && tail -f /tmp/gonhanh_debug.log
+touch /tmp/vkey_debug.log && tail -f /tmp/vkey_debug.log
 ```
 
 Gõ lại để tái hiện lỗi, sau đó gửi log giúp mình nhé!

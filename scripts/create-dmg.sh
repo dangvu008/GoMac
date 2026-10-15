@@ -1,5 +1,5 @@
 #!/bin/bash
-# Create beautiful DMG installer for GoNhanh
+# Create beautiful DMG installer for VKey
 # macOS standard style with drag-to-install visual guidance
 
 set -e
@@ -10,8 +10,8 @@ MACOS_DIR="$PROJECT_ROOT/platforms/macos"
 DMG_RESOURCES="$MACOS_DIR/dmg-resources"
 
 # Configuration
-APP_NAME="GoNhanh"
-VOL_NAME="GoNhanh"
+APP_NAME="VKey"
+VOL_NAME="VKey"
 DMG_TEMP="$MACOS_DIR/build/${APP_NAME}_temp.dmg"
 DMG_FINAL="$MACOS_DIR/build/${APP_NAME}.dmg"
 
@@ -29,11 +29,11 @@ APP_PATH="${1:-$MACOS_DIR/build/Release/${APP_NAME}.app}"
 
 if [ ! -d "$APP_PATH" ]; then
     echo "Error: App not found at $APP_PATH"
-    echo "Usage: $0 [path/to/GoNhanh.app]"
+    echo "Usage: $0 [path/to/VKey.app]"
     exit 1
 fi
 
-echo "📦 Creating DMG installer for GoNhanh..."
+echo "📦 Creating DMG installer for VKey..."
 echo "   App: $APP_PATH"
 
 # Clean up any existing DMG

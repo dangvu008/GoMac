@@ -1,7 +1,7 @@
-# GoNhanh Windows Development Setup Script
+# VKey Windows Development Setup Script
 # Run: powershell -ExecutionPolicy Bypass -File scripts/setup-windows.ps1
 
-Write-Host "GoNhanh Windows Setup" -ForegroundColor Cyan
+Write-Host "VKey Windows Setup" -ForegroundColor Cyan
 Write-Host "=====================" -ForegroundColor Cyan
 
 # Check Rust installation

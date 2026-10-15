@@ -11,9 +11,9 @@
 //!
 //! This catches bugs where one typing order works but another doesn't.
 
-use gonhanh_core::engine::Engine;
-use gonhanh_core::utils::type_word;
 use std::collections::HashMap;
+use vkey_core::engine::Engine;
+use vkey_core::utils::type_word;
 
 // =============================================================================
 // CHARACTER DECOMPOSITION
@@ -257,9 +257,7 @@ fn test_word_consistency(word: &str, with_auto_restore: bool) -> (bool, Vec<(Str
 
     for order in &orders {
         let mut engine = Engine::new();
-        if with_auto_restore {
-            engine.set_english_auto_restore(true);
-        }
+        if with_auto_restore {}
 
         let input = if with_auto_restore {
             format!("{} ", order)

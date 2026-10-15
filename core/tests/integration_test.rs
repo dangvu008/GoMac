@@ -2,8 +2,8 @@
 
 mod common;
 use common::{assert_action, assert_passthrough, telex, type_word};
-use gonhanh_core::data::keys;
-use gonhanh_core::engine::{Action, Engine};
+use vkey_core::data::keys;
+use vkey_core::engine::{Action, Engine};
 
 // ============================================================
 // ENGINE STATE: Enable/Disable
@@ -33,7 +33,6 @@ fn disabled_engine_ignores_auto_restore() {
     // When engine is disabled (e.g., macOS input source is Telex),
     // auto-restore should NOT work - all keys should pass through
     let mut e = Engine::new();
-    e.set_english_auto_restore(true);
     e.set_enabled(false);
 
     // Even with auto-restore enabled, disabled engine returns None
@@ -496,8 +495,7 @@ fn foreign_word_string_no_mark() {
 #[test]
 fn foreign_word_express_no_mark() {
     let mut e = Engine::new();
-    e.set_english_auto_restore(true); // Enable experimental feature
-                                      // "express" - 'r' after 'p' should not apply mark
+    // "express" - 'r' after 'p' should not apply mark
     let result = type_word(&mut e, "express");
     assert!(
         !result.contains('ẻ'),
@@ -562,15 +560,6 @@ fn foreign_word_could_no_mark() {
     assert_eq!(result, "coulds", "coulds should stay unchanged");
 }
 
-#[test]
-fn foreign_word_would_no_mark() {
-    let mut e = Engine::new();
-    e.set_english_auto_restore(true); // Enable experimental feature
-                                      // "ou" pattern doesn't exist in Vietnamese
-    let result = type_word(&mut e, "woulds");
-    assert_eq!(result, "woulds", "woulds should stay unchanged");
-}
-
 // --- Words with invalid consonant continuations (T+R, P+R, C+R) ---
 
 #[test]
@@ -603,16 +592,6 @@ fn foreign_word_spectrum_no_mark() {
     // c+r pattern (spec-trum)
     let result = type_word(&mut e, "spectrum");
     assert_eq!(result, "spectrum", "spectrum should stay unchanged");
-}
-
-#[test]
-fn foreign_word_describe_auto_restore() {
-    // D+E pattern: now uses auto-restore when space is typed
-    // "describe" is restored to original form via auto-restore
-    let mut e = Engine::new();
-    e.set_english_auto_restore(true);
-    let result = type_word(&mut e, "describe ");
-    assert_eq!(result, "describe ", "describe should be auto-restored");
 }
 
 #[test]
@@ -668,6 +647,8 @@ fn vietnamese_an_with_mark_after_final() {
 fn vni_shift_2_passes_through_for_at_symbol() {
     // VNI: "hi" + Shift+2 should NOT apply huyền mark
     // User wants to type "hi@", not "hì"
+    // The engine should consume the key and output '@' directly
+    // (overriding macOS Vietnamese layout which swaps @ and ")
     let mut e = Engine::new();
     e.set_method(1); // VNI
 
@@ -675,25 +656,22 @@ fn vni_shift_2_passes_through_for_at_symbol() {
     e.on_key(keys::H, false, false);
     e.on_key(keys::I, false, false);
 
-    // Shift+2 (for @) - should pass through, not apply mark
+    // Shift+2 (for @) - should be consumed and output '@', not apply mark
     let r = e.on_key_ext(keys::N2, true, false, true); // caps=true, ctrl=false, shift=true
     assert_eq!(
         r.action,
-        Action::None as u8,
-        "Shift+2 should pass through in VNI"
+        Action::Send as u8,
+        "Shift+2 should be consumed and output @ in VNI"
     );
+    assert_ne!(r.flags & 0x01, 0, "key_consumed flag should be set");
+    assert_eq!(r.chars[0], '@' as u32, "Shift+2 should output @");
 }
 
 #[test]
 fn vni_shift_numbers_all_pass_through() {
-    // All Shift+number combinations should pass through in VNI
-    let mut e = Engine::new();
-    e.set_method(1); // VNI
-
-    // Type a vowel first
-    e.on_key(keys::A, false, false);
-
-    // All number keys with shift should pass through
+    // All Shift+number combinations should NOT apply VNI marks
+    // Some keys (N2, QUOTE) are consumed to override macOS layout swap
+    // Others pass through normally - either way, no Vietnamese diacritics should appear
     let number_keys = [
         keys::N1,
         keys::N2,
@@ -707,14 +685,32 @@ fn vni_shift_numbers_all_pass_through() {
         keys::N0,
     ];
 
+    // Vietnamese diacritics that VNI marks would produce
+    let vni_diacritics: &[char] = &[
+        'á', 'à', 'ả', 'ã', 'ạ', // marks
+        'â', 'ă', 'ơ', 'ư', 'ô', 'ê', 'đ', // tones/stroke
+    ];
+
     for &key in &number_keys {
+        let mut e = Engine::new();
+        e.set_method(1); // VNI
+
+        // Type a vowel first
+        e.on_key(keys::A, false, false);
+
         let r = e.on_key_ext(key, true, false, true); // shift=true
-        assert_eq!(
-            r.action,
-            Action::None as u8,
-            "Shift+{} should pass through in VNI",
-            key
-        );
+
+        // If action is Send, verify the output is NOT a VNI diacritic
+        if r.action == Action::Send as u8 && r.count > 0 {
+            let output_char = char::from_u32(r.chars[0]).unwrap_or('\0');
+            assert!(
+                !vni_diacritics.contains(&output_char),
+                "Shift+{} should NOT produce Vietnamese diacritic '{}', got action={}",
+                key,
+                output_char,
+                r.action
+            );
+        }
     }
 }
 
@@ -740,24 +736,27 @@ fn vni_without_shift_still_applies_marks() {
 fn telex_shift_not_affected() {
     // Telex mode should not be affected by the shift parameter
     // (Telex doesn't use number keys for marks)
+    // Shift+2 is consumed to override macOS Vietnamese layout swap (outputs '@')
     let mut e = Engine::new();
     e.set_method(0); // Telex
 
-    // Type "a" + Shift+2 - should just pass through (2 is not a Telex modifier)
+    // Type "a" + Shift+2 - should be consumed and output '@' (overriding OS layout)
     e.on_key(keys::A, false, false);
     let r = e.on_key_ext(keys::N2, true, false, true);
     assert_eq!(
         r.action,
-        Action::None as u8,
-        "Telex should ignore number keys"
+        Action::Send as u8,
+        "Telex Shift+2 should be consumed to output @"
     );
+    assert_ne!(r.flags & 0x01, 0, "key_consumed flag should be set");
+    assert_eq!(r.chars[0], '@' as u32, "Shift+2 should output @");
 }
 
 // ============================================================
 // SHORTCUT TESTS
 // ============================================================
 
-use gonhanh_core::engine::shortcut::Shortcut;
+use vkey_core::engine::shortcut::Shortcut;
 
 #[test]
 fn shortcut_triggers_on_space() {
@@ -1199,40 +1198,6 @@ fn foreign_word_beach_no_mark() {
     );
 }
 
-// Test that common English words with 'x' stay unchanged
-// The "consonant + e + x" pattern is detected as English (tex-, nex-, etc.)
-// NOTE: Requires english_auto_restore to be enabled (experimental feature).
-#[test]
-fn foreign_word_text_no_mark() {
-    let mut e = Engine::new();
-    e.set_english_auto_restore(true); // Enable experimental feature
-    let text_result = type_word(&mut e, "text");
-
-    // "text" has consonant 't' before 'e', so Check 4 catches the "tex" pattern
-    println!("'text' -> '{}' (expected: 'text')", text_result);
-
-    assert_eq!(
-        text_result, "text",
-        "text should stay unchanged (consonant + e + x detected as English)"
-    );
-}
-
-/// Auto-restore now handles "expect" - the "xp" pattern (x followed by consonant) is detected.
-/// NOTE: Requires english_auto_restore to be enabled (experimental feature).
-#[test]
-fn foreign_word_expect_no_mark() {
-    let mut e = Engine::new();
-    e.set_english_auto_restore(true); // Enable experimental feature
-    let expect_result = type_word(&mut e, "expect");
-
-    // "expect" starts with 'e', no consonant before - can't distinguish from Vietnamese "ẽ"
-    println!("'expect' -> '{}' (expected: 'expect')", expect_result);
-
-    assert_eq!(
-        expect_result, "expect",
-        "expect should stay unchanged (e+x detected as English)"
-    );
-}
 /// Bug: Shortcut should NOT trigger when preceded by numbers
 /// e.g., "149k" should NOT expand "k" → "không"
 #[test]
@@ -2341,7 +2306,7 @@ fn backspace_after_space_uppercase_then_lowercase() {
 
 /// Helper: simulate typing on existing screen text after restore_word
 fn restore_and_type(e: &mut Engine, initial: &str, input: &str) -> String {
-    use gonhanh_core::utils::char_to_key;
+    use vkey_core::utils::char_to_key;
 
     // Start with screen showing initial word
     let mut screen: String = initial.into();
@@ -2468,7 +2433,7 @@ fn restore_word_then_extend() {
 /// The key fix: "uw" → "ư" transformation now works after restore
 #[test]
 fn restore_word_non_vietnamese_then_type_new() {
-    use gonhanh_core::utils::char_to_key;
+    use vkey_core::utils::char_to_key;
 
     let mut e = Engine::new();
     // Restore non-Vietnamese word "shortcuts"
@@ -2509,7 +2474,7 @@ fn restore_word_non_vietnamese_then_type_new() {
 /// Bug fix: typing 'u' after "shortcuts" should clear buffer, then "uw" → "ư"
 #[test]
 fn restore_word_ascii_then_vowel() {
-    use gonhanh_core::utils::char_to_key;
+    use vkey_core::utils::char_to_key;
     let mut e = Engine::new();
     e.restore_word("shortcuts");
 
@@ -2611,9 +2576,9 @@ fn oiw_vs_owi_order() {
 // Debug test for oiw
 #[test]
 fn test_debug_oiw() {
-    use gonhanh_core::data::keys;
-    use gonhanh_core::engine::validation::is_valid;
-    use gonhanh_core::engine::Engine;
+    use vkey_core::data::keys;
+    use vkey_core::engine::validation::is_valid;
+    use vkey_core::engine::Engine;
 
     // First check if "oi" is considered valid Vietnamese
     let oi_keys = vec![keys::O, keys::I];
@@ -2729,8 +2694,8 @@ fn test_nafo_vs_naof() {
 // Debug test for rieneg - circumflex modifier order
 #[test]
 fn test_debug_rieneg() {
-    use gonhanh_core::data::keys;
-    use gonhanh_core::engine::Engine;
+    use vkey_core::data::keys;
+    use vkey_core::engine::Engine;
 
     let mut e = Engine::new();
     let mut screen = String::new();
@@ -3000,7 +2965,6 @@ fn shortcut_backspace_with_mark() {
 fn complex_mau_sac_continuous_session() {
     let mut e = Engine::new();
     e.set_method(0);
-    e.set_english_auto_restore(true);
 
     // 1. Type "màu sắc", Cmd+A (select all), type new text to replace
     let r1 = type_word(&mut e, "mauf ");

@@ -1,5 +1,5 @@
 #!/usr/bin/env swift
-// Vietnamese typing test for GoNhanh - Tests medium and fast speeds
+// Vietnamese typing test for VKey - Tests medium and fast speeds
 
 import Foundation
 import CoreGraphics
@@ -12,7 +12,7 @@ let keycodes: [Character: UInt16] = [
     " ": 49, ",": 43, ".": 47, "[": 33, "]": 30, ":": 41, "/": 44
 ]
 
-let configPath = "/tmp/gonhanh_config.txt"
+let configPath = "/tmp/vkey_config.txt"
 
 var typeDelay: UInt32 = 30000  // 30ms between keys (adjustable per config)
 
@@ -44,7 +44,7 @@ func setConfig(_ config: String) {
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Core message (from README.md):
-//   - Gõ Nhanh: bộ gõ tiếng Việt miễn phí, nhanh, ổn định
+//   - VKey: bộ gõ tiếng Việt miễn phí, nhanh, ổn định
 //   - Đặt dấu đúng vị trí (hoà, khoẻ, thuỷ)
 //   - Nhận diện tiếng Anh tự động
 //
@@ -115,7 +115,7 @@ func runTest(mode: String) {
 while true {
     print("")
     print("══════════════════════════════════════════")
-    print("       GoNhanh Typing Test")
+    print("       VKey Typing Test")
     print("══════════════════════════════════════════")
     print("")
     print("  [1] Telex")

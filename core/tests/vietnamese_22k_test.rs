@@ -1,10 +1,10 @@
 //! Test Vietnamese 22k word list.
 //! Converts Vietnamese words to Telex input and verifies engine output.
 
-use gonhanh_core::engine::Engine;
-use gonhanh_core::utils::type_word;
 use std::fs::File;
 use std::io::Write;
+use vkey_core::engine::Engine;
+use vkey_core::utils::type_word;
 
 /// Get base character and modifiers (mark, tone) for Vietnamese character
 fn decompose_vn_char(c: char) -> (char, Option<char>, Option<char>) {
@@ -294,7 +294,6 @@ fn vietnamese_22k_coverage() {
 
         let mut e = Engine::new();
         e.set_modern_tone(false);
-        e.set_english_auto_restore(true);
         let result = type_word(&mut e, &input_with_space);
 
         // Check if result matches expected (either traditional or modern style)
@@ -379,7 +378,6 @@ fn vietnamese_22k_compound() {
 
             let mut e = Engine::new();
             e.set_modern_tone(false);
-            e.set_english_auto_restore(true);
             let result = type_word(&mut e, &input_with_space);
 
             actual_parts.push(result.trim().to_string());

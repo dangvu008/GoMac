@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Setting up GoNhanh development environment..."
+echo "🚀 Setting up VKey development environment..."
 
 # Source rustup if available
 if [ -f "$HOME/.cargo/env" ]; then

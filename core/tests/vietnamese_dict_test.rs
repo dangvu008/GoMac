@@ -1,8 +1,8 @@
 //! Test Vietnamese dictionary coverage.
 //! Target: 100% pass rate for Vietnamese words.
 
-use gonhanh_core::engine::Engine;
-use gonhanh_core::utils::type_word;
+use vkey_core::engine::Engine;
+use vkey_core::utils::type_word;
 
 /// Test Vietnamese words from dictionary.
 /// Each line in the file is: telex_input\texpected_output

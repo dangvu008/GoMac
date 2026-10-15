@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# GoNhanh Windows Build Script
+# VKey Windows Build Script
 # Run on Windows with Git Bash or via CI/CD
 
 # Source rustup environment
@@ -42,16 +42,16 @@ if [ "$CLEAN_INSTALL" = true ]; then
     echo "Cleaning build artifacts..."
 
     if is_windows; then
-        # Kill running GoNhanh processes
-        if tasklist 2>/dev/null | grep -qi "GoNhanh.exe"; then
-            echo "  Stopping GoNhanh.exe..."
-            taskkill //F //IM "GoNhanh.exe" 2>/dev/null || true
+        # Kill running VKey processes
+        if tasklist 2>/dev/null | grep -qi "VKey.exe"; then
+            echo "  Stopping VKey.exe..."
+            taskkill //F //IM "VKey.exe" 2>/dev/null || true
             sleep 1
         fi
     fi
 
-    rm -rf "$PROJECT_ROOT/platforms/windows/GoNhanh/bin" 2>/dev/null || true
-    rm -rf "$PROJECT_ROOT/platforms/windows/GoNhanh/obj" 2>/dev/null || true
+    rm -rf "$PROJECT_ROOT/platforms/windows/VKey/bin" 2>/dev/null || true
+    rm -rf "$PROJECT_ROOT/platforms/windows/VKey/obj" 2>/dev/null || true
     rm -rf "$PROJECT_ROOT/platforms/windows/publish" 2>/dev/null || true
     rm -rf "$PROJECT_ROOT/core/target" 2>/dev/null || true
     echo "  Done"
@@ -62,7 +62,7 @@ fi
 GIT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
 VERSION=${GIT_TAG#v}
 
-echo "Building GoNhanh for Windows"
+echo "Building VKey for Windows"
 echo "Version: $VERSION"
 echo ""
 
@@ -80,14 +80,14 @@ echo "[1/3] Building Rust core..."
 cd "$PROJECT_ROOT/core"
 cargo build --release --target x86_64-pc-windows-msvc
 
-mkdir -p "$PROJECT_ROOT/platforms/windows/GoNhanh/Native"
-cp "target/x86_64-pc-windows-msvc/release/gonhanh_core.dll" \
-   "$PROJECT_ROOT/platforms/windows/GoNhanh/Native/gonhanh_core.dll"
-echo "  Output: gonhanh_core.dll"
+mkdir -p "$PROJECT_ROOT/platforms/windows/VKey/Native"
+cp "target/x86_64-pc-windows-msvc/release/vkey_core.dll" \
+   "$PROJECT_ROOT/platforms/windows/VKey/Native/vkey_core.dll"
+echo "  Output: vkey_core.dll"
 
 # Build WPF app
 echo "[2/3] Building WPF app..."
-cd "$PROJECT_ROOT/platforms/windows/GoNhanh"
+cd "$PROJECT_ROOT/platforms/windows/VKey"
 
 if ! command -v dotnet &> /dev/null; then
     echo "Error: .NET SDK not found"
@@ -107,7 +107,7 @@ echo "  Output: platforms/windows/publish/"
 # Create ZIP package
 echo "[3/3] Creating package..."
 cd "$PROJECT_ROOT/platforms/windows"
-ZIP_NAME="GoNhanh-${VERSION}-win-x64.zip"
+ZIP_NAME="VKey-${VERSION}-win-x64.zip"
 rm -f "$ZIP_NAME" 2>/dev/null || true
 
 if command -v zip &> /dev/null; then

@@ -5,7 +5,7 @@ Use when a feature is being developed, in beta, or not yet publicly available.
 ## Template
 
 ```markdown
-Cảm ơn bạn đã quan tâm đến Gõ Nhanh!
+Cảm ơn bạn đã quan tâm đến VKey!
 
 ## ⏳ [feature_status]
 
@@ -32,14 +32,14 @@ Mong bạn tiếp tục theo dõi và ủng hộ! 🙏
 ## Example - Beta Feature
 
 ```markdown
-Cảm ơn bạn đã quan tâm đến Gõ Nhanh!
+Cảm ơn bạn đã quan tâm đến VKey!
 
 ## ⏳ Chế độ Beta
 
 Tính năng **Auto-restore tiếng Anh** đang ở chế độ thử nghiệm.
 
 **Cách bật:**
-1. Click vào icon Gõ Nhanh trên menu bar
+1. Click vào icon VKey trên menu bar
 2. Chọn Cài đặt
 3. Bật "Tự động khôi phục từ tiếng Anh"
 
@@ -49,7 +49,7 @@ Mong bạn tiếp tục theo dõi và ủng hộ! 🙏
 ## Example - Private Beta
 
 ```markdown
-Cảm ơn bạn đã quan tâm đến Gõ Nhanh!
+Cảm ơn bạn đã quan tâm đến VKey!
 
 ## ⏳ Test Private
 

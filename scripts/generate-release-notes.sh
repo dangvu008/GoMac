@@ -61,7 +61,7 @@ DIFF_STAT=$(git diff "$FROM_REF"..HEAD --stat 2>/dev/null)
 DIFF_CONTENT=$(git diff "$FROM_REF"..HEAD --no-color 2>/dev/null | head -800)
 
 # Build prompt for Claude
-PROMPT="Generate release notes for 'Gõ Nhanh' $VERSION (Vietnamese IME for macOS/Linux).
+PROMPT="Generate release notes for 'VKey' $VERSION (Vietnamese IME for macOS/Linux).
 
 OUTPUT FORMAT - Follow this EXACTLY:
 ## What's Changed
@@ -75,7 +75,7 @@ OUTPUT FORMAT - Follow this EXACTLY:
 ### ⚡ Improvements
 - Improvement description here
 
-**Full Changelog**: https://github.com/khaphanspace/gonhanh.org/compare/$FROM_REF...$VERSION
+**Full Changelog**: https://github.com/khaphanspace/vkey.org/compare/$FROM_REF...$VERSION
 
 RULES:
 1. Output ONLY markdown, start with '## What's Changed'

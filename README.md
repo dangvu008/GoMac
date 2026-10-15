@@ -1,18 +1,17 @@
 <h1 align="center">
-  <img src="assets/logo.png" alt="Gõ Nhanh Logo" width="128" height="128"><br>
-  Gõ Nhanh
+  <img src="assets/logo.png" alt="VKey Logo" width="128" height="128"><br>
+  VKey
 </h1>
 
 <p align="center">
-  <img src="https://img.shields.io/github/downloads/khaphanspace/gonhanh.org/total?label=Downloads" />
-  <img src="https://img.shields.io/github/contributors/khaphanspace/gonhanh.org" />
-  <img src="https://img.shields.io/github/last-commit/khaphanspace/gonhanh.org" />
+  <img src="https://img.shields.io/github/downloads/khaphanspace/vkey.org/total?label=Downloads" />
+  <img src="https://img.shields.io/github/contributors/khaphanspace/vkey.org" />
+  <img src="https://img.shields.io/github/last-commit/khaphanspace/vkey.org" />
 </p>
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-macOS-000000?logo=apple&logoColor=white" />
-  <img src="https://img.shields.io/badge/Platform-Linux-FCC624?logo=linux&logoColor=black" />
   <img src="https://img.shields.io/badge/License-BSD--3--Clause-blue.svg" alt="License: BSD-3-Clause">
-  <img src="https://github.com/khaphanspace/gonhanh.org/actions/workflows/ci.yml/badge.svg" alt="CI">
+  <img src="https://github.com/khaphanspace/vkey.org/actions/workflows/ci.yml/badge.svg" alt="CI">
 </p>
 
 <p align="center">
@@ -21,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/screenshot.png" alt="Gõ Nhanh Light Mode" width="100%">
+  <img src="assets/screenshot.png" alt="VKey Light Mode" width="100%">
 </p>
 
 ---
@@ -31,28 +30,26 @@
 ### 🍺 Homebrew (macOS - Khuyến nghị)
 
 ```bash
-brew install --cask gonhanh
+brew install --cask vkey
 ```
 
-> **Cập nhật:** App tự động kiểm tra phiên bản mới mỗi 24h. Hoặc dùng `brew upgrade --cask gonhanh`.
+> **Cập nhật:** App tự động kiểm tra phiên bản mới mỗi 24h. Hoặc dùng `brew upgrade --cask vkey`.
 
 ### 📦 Tải thủ công
 
 | Nền tảng | Trạng thái | Tải xuống | Hướng dẫn |
 |:--------:|:----------:|:---------:|:----------|
-| **macOS** | ✅ Sẵn sàng | [📥 Tải GoNhanh.dmg](https://github.com/khaphanspace/gonhanh.org/releases/latest/download/GoNhanh.dmg) | [Xem hướng dẫn](docs/install-macos.md) |
-| **Linux** | 🧪 Beta | — | [Xem hướng dẫn](docs/install-linux.md) |
-| **Windows** | 🧪 Beta | — | [Xem hướng dẫn](docs/install-windows.md) |
+| **macOS** | ✅ Sẵn sàng | [📥 Tải VKey.dmg](https://github.com/khaphanspace/vkey.org/releases/latest/download/VKey.dmg) | [Xem hướng dẫn](docs/install-macos.md) |
 
 <details>
 <summary><strong>⚠️ macOS: App không mở được?</strong></summary>
 
 ```bash
 # Chạy lệnh này trong Terminal sau khi kéo app vào Applications
-xattr -cr /Applications/GoNhanh.app
+xattr -cr /Applications/VKey.app
 ```
 
-Sau đó: **System Settings → Privacy & Security → Accessibility → Bật GoNhanh**
+Sau đó: **System Settings → Privacy & Security → Accessibility → Bật VKey**
 
 </details>
 
@@ -64,8 +61,8 @@ Sau đó: **System Settings → Privacy & Security → Accessibility → Bật G
 - 🔤 **Auto-restore tiếng Anh** — Gõ `text` `expect` `user` `push` `sort` → tự khôi phục khi nhấn space. [Xem chi tiết ↓](#-auto-restore-tiếng-anh)
 - ⎋ **Gõ ESC tự khôi phục** — Gõ `user` → `úẻ` → nhấn **ESC** → `user`. Không cần tắt bộ gõ khi gõ tiếng Anh!
 - 🧠 **Chuyển chế độ thông minh** — Tự nhớ ON/OFF cho từng app. Code trên VS Code (tắt) → Chat trên Slack (bật) → tự chuyển
-- 🔄 **Tự động theo input source** — Dùng tiếng Nhật, Hàn, Trung... → Gõ Nhanh tự tắt. Chuyển về tiếng Anh → tự bật lại
-- ⚡ **Siêu nhanh** — <1ms latency · ~5MB RAM. Hỗ trợ đa nền tảng trên cùng một engine
+- 🔄 **Tự động theo input source** — Dùng tiếng Nhật, Hàn, Trung... → VKey tự tắt. Chuyển về tiếng Anh → tự bật lại
+- ⚡ **Siêu nhanh** — <1ms latency · ~5MB RAM. Hỗ trợ nền tảng macOS trên cùng một engine
 
 
 <p align="center">
@@ -80,7 +77,7 @@ Sau đó: **System Settings → Privacy & Security → Accessibility → Bật G
 - ✂️ **Gõ tắt** — `vn` → `Việt Nam`, `ko` → `không`
 - 🔌 **Mọi app** — VS Code, Zed, Chrome, Notion, Terminal, Ghostty...
 - 🌗 **Dark/Light** — Theo hệ thống
-- 💻 **Đa nền tảng** — macOS, Linux, Windows (beta)
+- 💻 **Nền tảng** — macOS
 
 ### 🛡️ Cam kết "Ba Không"
 
@@ -96,7 +93,7 @@ Khi gõ tiếng Anh bằng Telex, một số chữ cái bị nhận nhầm thàn
 - `s` → sắc, `f` → huyền, `r` → hỏi, `x` → ngã, `j` → nặng
 - `w` → dấu móc (ư, ơ)
 
-**Gõ Nhanh tự động khôi phục** khi nhấn **Space** nếu phát hiện pattern tiếng Anh.
+**VKey tự động khôi phục** khi nhấn **Space** nếu phát hiện pattern tiếng Anh.
 
 ### ✅ Các pattern được nhận diện
 
@@ -110,9 +107,9 @@ Khi gõ tiếng Anh bằng Telex, một số chữ cái bị nhận nhầm thàn
 | **W + nguyên + W** | `wow` | Pattern "wow" đặc trưng tiếng Anh |
 | **F đầu** | `file` `fix` `function` `firebase` | F không tồn tại trong tiếng Việt |
 
-### 📝 So sánh: macOS Telex vs Gõ Nhanh
+### 📝 So sánh: macOS Telex vs VKey
 
-| Gõ | macOS Telex | Gõ Nhanh |
+| Gõ | macOS Telex | VKey |
 |:---|:------------|:---------|
 | `text ` | `têt ` ❌ | `text ` ✅ |
 | `expect ` | `ễpct ` ❌ | `expect ` ✅ |
@@ -146,9 +143,9 @@ Một số từ tiếng Anh tạo ra cấu trúc **hợp lệ tiếng Việt** n
 
 Tôi (**Kha Phan**) bắt đầu dự án này vì các bộ gõ hiện tại thường xuyên gặp lỗi khi tôi làm việc với **Claude Code**.
 
-Từ nhu cầu giải quyết vấn đề cá nhân, Gõ Nhanh được phát triển thành một sản phẩm hoàn thiện dành tặng cộng đồng. Đây cũng là sự tiếp nối và kế thừa từ **UniKey**, **OpenKey** và **EVKey**.
+Từ nhu cầu giải quyết vấn đề cá nhân, VKey được phát triển thành một sản phẩm hoàn thiện dành tặng cộng đồng. Đây cũng là sự tiếp nối và kế thừa từ **UniKey**, **OpenKey** và **EVKey**.
 
-Hy vọng Gõ Nhanh góp phần truyền cảm hứng cho cộng đồng mã nguồn mở tại Việt Nam.
+Hy vọng VKey góp phần truyền cảm hứng cho cộng đồng mã nguồn mở tại Việt Nam.
 
 Nếu các bạn thấy phần mềm hữu ích có thể [ủng hộ tôi tại đây](https://github.com/sponsors/khaphanspace).
 
@@ -168,8 +165,6 @@ Xem danh sách [đóng góp viên](CONTRIBUTORS.md) của dự án.
 |-------|-----------|
 | **Core Engine** | Rust 2021 (pure `std`, zero runtime deps) |
 | **macOS** | SwiftUI + CGEventTap + C FFI |
-| **Windows** | WPF/.NET 8 + SetWindowsHookEx + P/Invoke |
-| **Linux** | Fcitx5 + C++ + C FFI |
 | **Testing** | rstest + serial_test (600+ tests) |
 | **CI/CD** | GitHub Actions + auto-versioning + AI-generated release notes |
 | **Dev Tools** | [Claude Code](https://claude.ai/code) with [ClaudeKit](https://claudekit.cc/) |
@@ -222,10 +217,10 @@ make install   # Copy vào /Applications
 
 ## ⭐ Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=khaphanspace/gonhanh.org&type=Timeline&legend=bottom-right)](https://www.star-history.com/#khaphanspace/gonhanh.org&type=Timeline&legend=bottom-right)
+[![Star History Chart](https://api.star-history.com/svg?repos=khaphanspace/vkey.org&type=Timeline&legend=bottom-right)](https://www.star-history.com/#khaphanspace/vkey.org&type=Timeline&legend=bottom-right)
 
 ---
 
 ## 📄 License
 
-Copyright © 2025 Gõ Nhanh Contributors. [BSD-3-Clause](LICENSE).
+Copyright © 2025 VKey Contributors. [BSD-3-Clause](LICENSE).

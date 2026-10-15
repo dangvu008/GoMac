@@ -5,7 +5,7 @@ Use when a bug has been fixed and released.
 ## Template
 
 ```markdown
-Cảm ơn bạn đã báo lỗi và sử dụng Gõ Nhanh!
+Cảm ơn bạn đã báo lỗi và sử dụng VKey!
 
 ## ✅ Đã fix trong v[version]
 
@@ -40,7 +40,7 @@ git diff {sha}~1 {sha} --name-only
 ## Example
 
 ```markdown
-Cảm ơn bạn đã báo lỗi và sử dụng Gõ Nhanh!
+Cảm ơn bạn đã báo lỗi và sử dụng VKey!
 
 ## ✅ Đã fix trong v1.0.85
 

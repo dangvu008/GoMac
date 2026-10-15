@@ -11,7 +11,7 @@
 		A1000001000000000000002 /* MenuBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002000000000000002 /* MenuBar.swift */; };
 		A1000001000000000000003 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002000000000000003 /* SettingsView.swift */; };
 		A1000001000000000000004 /* RustBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002000000000000004 /* RustBridge.swift */; };
-		A1000001000000000000005 /* libgonhanh_core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000002000000000000005 /* libgonhanh_core.a */; };
+		A1000001000000000000005 /* libvkey_core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000002000000000000005 /* libvkey_core.a */; };
 		A1000001000000000000007 /* AppMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002000000000000007 /* AppMetadata.swift */; };
 		A1000001000000000000008 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002000000000000008 /* OnboardingView.swift */; };
 		A1000001000000000000009 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002000000000000009 /* AboutView.swift */; };
@@ -31,7 +31,7 @@
 			containerPortal = A1000010000000000000001 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = A1000006000000000000001;
-			remoteInfo = GoNhanh;
+			remoteInfo = VKey;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -40,7 +40,7 @@
 		A1000002000000000000002 /* MenuBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBar.swift; sourceTree = "<group>"; };
 		A1000002000000000000003 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		A1000002000000000000004 /* RustBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustBridge.swift; sourceTree = "<group>"; };
-		A1000002000000000000005 /* libgonhanh_core.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libgonhanh_core.a; sourceTree = "<group>"; };
+		A1000002000000000000005 /* libvkey_core.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libvkey_core.a; sourceTree = "<group>"; };
 		A1000002000000000000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A1000002000000000000007 /* AppMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMetadata.swift; sourceTree = "<group>"; };
 		A1000002000000000000008 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -50,11 +50,11 @@
 		A100000200000000000000F /* MainSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainSettingsView.swift; sourceTree = "<group>"; };
 		SPECIALPANEL002 /* SpecialPanelAppDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpecialPanelAppDetector.swift; sourceTree = "<group>"; };
 		A1000002000000000000010 /* InputSourceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputSourceManager.swift; sourceTree = "<group>"; };
-		A1000003000000000000001 /* GoNhanh.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GoNhanh.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1000003000000000000001 /* VKey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VKey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1000002000000000000001 /* KeyboardShortcutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutTests.swift; sourceTree = "<group>"; };
 		B1000002000000000000002 /* LaunchAtLoginTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginTests.swift; sourceTree = "<group>"; };
 		B1000002000000000000003 /* SoundManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManagerTests.swift; sourceTree = "<group>"; };
-		B1000003000000000000002 /* GoNhanhTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GoNhanhTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B1000003000000000000002 /* VKeyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VKeyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,7 +62,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1000001000000000000005 /* libgonhanh_core.a in Frameworks */,
+				A1000001000000000000005 /* libvkey_core.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,7 +90,7 @@
 				A100000200000000000000F /* MainSettingsView.swift */,
 				SPECIALPANEL002 /* SpecialPanelAppDetector.swift */,
 				A1000002000000000000010 /* InputSourceManager.swift */,
-				A1000002000000000000005 /* libgonhanh_core.a */,
+				A1000002000000000000005 /* libvkey_core.a */,
 				A1000002000000000000006 /* Info.plist */,
 				A100000200000000000000A /* Assets.xcassets */,
 				B1000005000000000000001 /* Tests */,
@@ -101,8 +101,8 @@
 		A1000005000000000000002 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A1000003000000000000001 /* GoNhanh.app */,
-				B1000003000000000000002 /* GoNhanhTests.xctest */,
+				A1000003000000000000001 /* VKey.app */,
+				B1000003000000000000002 /* VKeyTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -120,9 +120,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A1000006000000000000001 /* GoNhanh */ = {
+		A1000006000000000000001 /* VKey */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A1000007000000000000001 /* Build configuration list for PBXNativeTarget "GoNhanh" */;
+			buildConfigurationList = A1000007000000000000001 /* Build configuration list for PBXNativeTarget "VKey" */;
 			buildPhases = (
 				A1000008000000000000001 /* Sources */,
 				A1000004000000000000001 /* Frameworks */,
@@ -132,14 +132,14 @@
 			);
 			dependencies = (
 			);
-			name = GoNhanh;
-			productName = GoNhanh;
-			productReference = A1000003000000000000001 /* GoNhanh.app */;
+			name = VKey;
+			productName = VKey;
+			productReference = A1000003000000000000001 /* VKey.app */;
 			productType = "com.apple.product-type.application";
 		};
-		B1000006000000000000001 /* GoNhanhTests */ = {
+		B1000006000000000000001 /* VKeyTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B1000007000000000000001 /* Build configuration list for PBXNativeTarget "GoNhanhTests" */;
+			buildConfigurationList = B1000007000000000000001 /* Build configuration list for PBXNativeTarget "VKeyTests" */;
 			buildPhases = (
 				B1000008000000000000001 /* Sources */,
 				B1000004000000000000001 /* Frameworks */,
@@ -150,9 +150,9 @@
 			dependencies = (
 				B1000003000000000000003 /* PBXTargetDependency */,
 			);
-			name = GoNhanhTests;
-			productName = GoNhanhTests;
-			productReference = B1000003000000000000002 /* GoNhanhTests.xctest */;
+			name = VKeyTests;
+			productName = VKeyTests;
+			productReference = B1000003000000000000002 /* VKeyTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -174,7 +174,7 @@
 					};
 				};
 			};
-			buildConfigurationList = A1000011000000000000001 /* Build configuration list for PBXProject "GoNhanh" */;
+			buildConfigurationList = A1000011000000000000001 /* Build configuration list for PBXProject "VKey" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -187,8 +187,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A1000006000000000000001 /* GoNhanh */,
-				B1000006000000000000001 /* GoNhanhTests */,
+				A1000006000000000000001 /* VKey */,
+				B1000006000000000000001 /* VKeyTests */,
 			);
 		};
 /* End PBXProject section */
@@ -245,7 +245,7 @@
 /* Begin PBXTargetDependency section */
 		B1000003000000000000003 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = A1000006000000000000001 /* GoNhanh */;
+			target = A1000006000000000000001 /* VKey */;
 			targetProxy = B1000003000000000000001 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -382,7 +382,7 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 GoNhanh Contributors. All rights reserved.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 VKey Contributors. All rights reserved.";
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -403,8 +403,8 @@
 					"-framework",
 					Carbon,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.gonhanh.GoNhanh;
-				PRODUCT_NAME = GoMac;
+				PRODUCT_BUNDLE_IDENTIFIER = org.vkey.VKey;
+				PRODUCT_NAME = VKey;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -423,7 +423,7 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 GoNhanh Contributors. All rights reserved.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 VKey Contributors. All rights reserved.";
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -444,8 +444,8 @@
 					"-framework",
 					Carbon,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.gonhanh.GoNhanh;
-				PRODUCT_NAME = GoMac;
+				PRODUCT_BUNDLE_IDENTIFIER = org.vkey.VKey;
+				PRODUCT_NAME = VKey;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -460,11 +460,11 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.gonhanh.GoNhanhTests;
-				PRODUCT_NAME = GoMac;
+				PRODUCT_BUNDLE_IDENTIFIER = org.vkey.VKeyTests;
+				PRODUCT_NAME = VKey;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GoNhanh.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GoNhanh";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VKey.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VKey";
 			};
 			name = Debug;
 		};
@@ -477,18 +477,18 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.gonhanh.GoNhanhTests;
-				PRODUCT_NAME = GoMac;
+				PRODUCT_BUNDLE_IDENTIFIER = org.vkey.VKeyTests;
+				PRODUCT_NAME = VKey;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GoNhanh.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GoNhanh";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VKey.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VKey";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A1000007000000000000001 /* Build configuration list for PBXNativeTarget "GoNhanh" */ = {
+		A1000007000000000000001 /* Build configuration list for PBXNativeTarget "VKey" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A1000013000000000000001 /* Debug */,
@@ -497,7 +497,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A1000011000000000000001 /* Build configuration list for PBXProject "GoNhanh" */ = {
+		A1000011000000000000001 /* Build configuration list for PBXProject "VKey" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A1000012000000000000001 /* Debug */,
@@ -506,7 +506,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B1000007000000000000001 /* Build configuration list for PBXNativeTarget "GoNhanhTests" */ = {
+		B1000007000000000000001 /* Build configuration list for PBXNativeTarget "VKeyTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B1000013000000000000001 /* Debug */,

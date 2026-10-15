@@ -1,5 +1,5 @@
 import XCTest
-@testable import GoNhanh
+@testable import VKey
 
 // MARK: - Keyboard Shortcut Tests
 

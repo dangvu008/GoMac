@@ -1,14 +1,14 @@
 [package]
-name = "gonhanh-core"
+name = "vkey-core"
 version = "0.1.0"
 edition = "2021"
 authors = ["Kha Phan <nhatkha1407@gmail.com>"]
 license = "GPL-3.0-or-later"
-description = "Gõ Nhanh - Vietnamese input method core engine"
-repository = "https://github.com/khaphanspace/gonhanh.org"
+description = "VKey - Vietnamese input method core engine"
+repository = "https://github.com/dangvu008/VKey"
 
 [lib]
-name = "gonhanh_core"
+name = "vkey_core"
 crate-type = ["staticlib", "cdylib", "rlib"]  # Add rlib for tests
 
 [dependencies]

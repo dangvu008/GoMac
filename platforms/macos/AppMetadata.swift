@@ -5,16 +5,18 @@ import AppKit
 // All project metadata in one place for consistency
 
 enum AppMetadata {
-    static let name = "GoMac"
+    static let name = "VKey"
 
     // App Logo - dùng chung cho mọi nơi
     static var logo: NSImage {
         NSImage(named: "AppLogo") ?? NSApp.applicationIconImage ?? NSImage()
     }
-    static let displayName = "GoMac"
+    static let displayName = "VKey"
     static let tagline = "Bộ gõ tiếng Việt hiệu suất cao"
     static let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
     static let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    static let gitHash = Bundle.main.infoDictionary?["VKeyGitHash"] as? String ?? "dev"
+    static let buildDate = Bundle.main.infoDictionary?["VKeyBuildDate"] as? String ?? "unknown"
 
     // Author
     static let author = "DangVu"
@@ -22,8 +24,8 @@ enum AppMetadata {
 
     // Links
     static let website = "https://github.com/dangvu008"
-    static let repository = "https://github.com/dangvu008/GoMac"
-    static let issuesURL = "https://github.com/dangvu008/GoMac/issues"
+    static let repository = "https://github.com/dangvu008/VKey"
+    static let issuesURL = "https://github.com/dangvu008/VKey/issues"
     static let sponsorURL = "https://github.com/sponsors/dangvu008"
     static let authorProfile = "https://github.com/dangvu008"
 
@@ -72,25 +74,28 @@ enum AppMetadata {
 // MARK: - Settings Keys (Shared)
 
 enum SettingsKey {
-    static let enabled = "gonhanh.enabled"
-    static let method = "gonhanh.method"
-    static let hasCompletedOnboarding = "gonhanh.onboarding.completed"
-    static let permissionGranted = "gonhanh.permission.granted"
-    static let toggleShortcut = "gonhanh.shortcut.toggle"
-    static let reopenSettingsAfterUpdate = "gonhanh.update.reopenSettings"
-    static let perAppMode = "gonhanh.perAppMode"
-    static let perAppModes = "gonhanh.perAppModes"
-    static let shortcuts = "gonhanh.shortcuts"
-    static let autoWShortcut = "gonhanh.autoWShortcut"
-    static let bracketShortcut = "gonhanh.bracketShortcut"
-    static let restoreShortcutEnabled = "gonhanh.escRestore"  // Keep old key for backward compat
-    static let restoreShortcut = "gonhanh.shortcut.restore"
-    static let modernTone = "gonhanh.modernTone"
-    static let englishAutoRestore = "gonhanh.englishAutoRestore"
-    static let autoCapitalize = "gonhanh.autoCapitalize"
-    static let launchAtLoginUserDisabled = "gonhanh.launchAtLogin.userDisabled"
-    static let soundEnabled = "gonhanh.soundEnabled"
-    static let autoSwitchToUSLayout = "gonhanh.autoSwitchToUSLayout"
+    static let enabled = "vkey.enabled"
+    static let method = "vkey.method"
+    static let hasCompletedOnboarding = "vkey.onboarding.completed"
+    static let permissionGranted = "vkey.permission.granted"
+    static let toggleShortcut = "vkey.shortcut.toggle"
+    static let reopenSettingsAfterUpdate = "vkey.update.reopenSettings"
+    static let perAppMode = "vkey.perAppMode"
+    static let perAppModes = "vkey.perAppModes"
+    static let shortcuts = "vkey.shortcuts"
+    static let autoWShortcut = "vkey.autoWShortcut"
+    static let bracketShortcut = "vkey.bracketShortcut"
+    static let restoreShortcutEnabled = "vkey.escRestore"
+    static let restoreShortcut = "vkey.shortcut.restore"
+    static let modernTone = "vkey.modernTone"
+
+
+    static let launchAtLoginUserDisabled = "vkey.launchAtLogin.userDisabled"
+    static let soundEnabled = "vkey.soundEnabled"
+    static let autoSwitchToUSLayout = "vkey.autoSwitchToUSLayout"
+    static let iconStyle = "vkey.iconStyle"
+    static let customKeyMap = "vkey.customKeyMap"
+    static let shiftKeys = "vkey.shiftKeys"
 }
 
 // MARK: - Keyboard Shortcut Model

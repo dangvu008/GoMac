@@ -6,7 +6,7 @@
  */
 
 const REPO_OWNER = 'khaphanspace';
-const REPO_NAME = 'gonhanh.org';
+const REPO_NAME = 'vkey.org';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
@@ -18,7 +18,7 @@ if (!GITHUB_TOKEN) {
 const headers = {
   Authorization: `Bearer ${GITHUB_TOKEN}`,
   'Content-Type': 'application/json',
-  'User-Agent': 'GoNhanh-Contributors-Bot',
+  'User-Agent': 'VKey-Contributors-Bot',
 };
 
 // Bots to exclude
@@ -284,9 +284,9 @@ function generateMarkdown(sponsors, contributors, community) {
 
   return `<div align="center">
 
-# 🌟 Cộng đồng Gõ Nhanh
+# 🌟 Cộng đồng VKey
 
-**Gõ Nhanh được xây dựng bởi cộng đồng, cho cộng đồng.**
+**VKey được xây dựng bởi cộng đồng, cho cộng đồng.**
 
 Mỗi đóng góp, dù lớn hay nhỏ, đều giúp người Việt gõ tiếng Việt tốt hơn mỗi ngày.
 

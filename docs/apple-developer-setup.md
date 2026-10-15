@@ -1,6 +1,6 @@
 # Apple Developer Setup Guide
 
-This guide covers setting up Apple Developer code signing and notarization for GoNhanh.
+This guide covers setting up Apple Developer code signing and notarization for VKey.
 
 ## Prerequisites
 
@@ -66,7 +66,7 @@ This guide covers setting up Apple Developer code signing and notarization for G
 
 3. Click **+** to generate a new password
 
-4. Name it `GoNhanh CI/CD` and save the password
+4. Name it `VKey CI/CD` and save the password
 
 ## Step 5: Configure GitHub Secrets
 
@@ -159,8 +159,8 @@ The following files have been updated for Apple Developer support:
 
 | File | Changes |
 |------|---------|
-| `platforms/macos/GoNhanh.entitlements` | Development entitlements (with debug flags) |
-| `platforms/macos/GoNhanh.entitlements.production` | Production entitlements (hardened runtime) |
+| `platforms/macos/VKey.entitlements` | Development entitlements (with debug flags) |
+| `platforms/macos/VKey.entitlements.production` | Production entitlements (hardened runtime) |
 | `scripts/build-macos.sh` | Added `--sign` and `--notarize` options |
 | `.github/workflows/release.yml` | Code signing + notarization pipeline |
 | `.github/workflows/pre-release.yml` | Optional signing for PR builds |
